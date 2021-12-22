@@ -15,12 +15,12 @@ public class Transfert {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Long id;
+    private String id;
 
     @OneToOne
     private Account compteOwner;
 
     private Date date;
-    private String IBAN_cible;
-    private int montant;
+    private String IBAN_target;
+    private int amount;
 }

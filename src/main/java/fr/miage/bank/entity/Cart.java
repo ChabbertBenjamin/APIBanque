@@ -13,14 +13,14 @@ import javax.persistence.*;
 public class Cart {
     @Id
     @Column(name = "id", nullable = false)
-    private Long id;
+    private String id;
 
     private int code;
     private int crypto;
-    private boolean bloque;
+    private boolean freeze;
     private boolean localisation;
     private int plafond;
-    private boolean sansContact;
+    private boolean contactLess;
     private boolean virtual;
 
     @ManyToOne

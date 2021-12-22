@@ -16,22 +16,22 @@ public class Operation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
-    private Long id;
+    private String id;
 
     private Date date;
-    private Date heure;
-    private String libelle;
-    private double montant;
+    private Date time;
+    private String text;
+    private double amount;
     private double taux;
 
-    private String IBAN_crediteur;
-    private String nomCrediteur;
+    private String IBAN_creditor;
+    private String nameCreditor;
 
     @OneToOne
     private Account compteOwner;
 
 
-    private String categ;
-    private String pays;
+    private String category;
+    private String country;
 
 }
