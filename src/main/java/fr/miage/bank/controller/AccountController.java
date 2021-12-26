@@ -41,11 +41,7 @@ public class AccountController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping(value = "/{accountId}/cartes")
-    public ResponseEntity<?> getAllCarts(@PathVariable("accountId") String id){
-        Iterable<Cart> allCarts = accountService.findAllCarts(id);
-        return ResponseEntity.ok(allCarts);
-    }
+
 
     @PostMapping
     @Transactional
