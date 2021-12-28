@@ -5,7 +5,7 @@ import fr.miage.bank.entity.Account;
 import fr.miage.bank.entity.AccountInput;
 import fr.miage.bank.entity.AccountValidator;
 import fr.miage.bank.service.AccountService;
-import org.springframework.data.util.ReflectionUtils;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
