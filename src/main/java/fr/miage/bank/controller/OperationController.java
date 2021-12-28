@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping(value = "/accounts/{accountId}/operations")
 public class OperationController {
@@ -24,5 +26,12 @@ public class OperationController {
     public ResponseEntity<?> getAllOperationsByAccountId(@PathVariable("accountId") String accountId){
         Iterable<Operation> allOperations = operationService.findAllOperationsByAccountId(accountId);
         return ResponseEntity.ok(assembler.toCollectionModel(allOperations));
+    }
+
+    @GetMapping(value = "/{operationId}")
+    public ResponseEntity<?> getOneOperationById(@PathVariable("accountId") String accountId, @PathVariable("operationId") String operationId){
+        return Optional.ofNullable(operationService.findByIdAndCompteOwnerId(operationId, accountId)).filter(Optional::isPresent)
+                .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))
+                .orElse(ResponseEntity.notFound().build());
     }
 }

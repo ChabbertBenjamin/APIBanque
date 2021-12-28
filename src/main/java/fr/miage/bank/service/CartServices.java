@@ -24,5 +24,11 @@ public class CartServices {
     public Cart createCart(Cart carte){
         return cRepository.save(carte);
     }
+    public boolean existById(String id){
+        return cRepository.existsById(id);
+    }
+    public Cart updateCarte(Cart carte){
+        return cRepository.save(carte);
+    }
 
 }

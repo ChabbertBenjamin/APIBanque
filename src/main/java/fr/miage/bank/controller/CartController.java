@@ -7,20 +7,20 @@ import fr.miage.bank.entity.CartInput;
 import fr.miage.bank.service.AccountService;
 import fr.miage.bank.service.CartServices;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
-import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
+@ExposesResourceFor(Cart.class)
 @RequestMapping(value = "/accounts/{accountId}/cartes")
 public class CartController {
     private final CartServices cartServices;
@@ -43,8 +43,9 @@ public class CartController {
     @PostMapping
     @Transactional
     public ResponseEntity<?> createCarte(@RequestBody @Valid CartInput carte, @PathVariable("accountId") String accountId){
-        Optional<Account> account = accountService.findById(accountId);
+        Optional<Account> optionalAccount = accountService.findById(accountId);
 
+        Account account = optionalAccount.get();
         Cart carte2save = new Cart(
                 UUID.randomUUID().toString(),
                 Integer.parseInt(carte.getCode()),
@@ -54,12 +55,33 @@ public class CartController {
                 carte.getPlafond(),
                 carte.isSansContact(),
                 carte.isVirtual(),
-                account.get()
+                account
         );
 
         Cart saved = cartServices.createCart(carte2save);
 
-        URI location = linkTo(CartController.class).slash(saved.getId()).toUri();
-        return ResponseEntity.created(location).build();
+        //Link location = linkTo(CarteController.class).slash(saved.getId()).slash(accountId).withSelfRel();
+        //return ResponseEntity.ok(location.withSelfRel());
+
+        return ResponseEntity.ok(saved);
+    }
+
+    @PutMapping(value = "/{carteId}")
+    @Transactional
+    public ResponseEntity<?> updateCarte(@RequestBody Cart carte, @PathVariable("carteId") String carteId){
+        Optional<Cart> body = Optional.ofNullable(carte);
+
+        if(!body.isPresent()){
+            return ResponseEntity.badRequest().build();
+        }
+
+        if(!cartServices.existById(carteId)){
+            return ResponseEntity.notFound().build();
+        }
+
+        carte.setId(carteId);
+        Cart result = cartServices.updateCarte(carte);
+
+        return ResponseEntity.ok().build();
     }
 }
