@@ -21,4 +21,8 @@ public class CartServices {
         return cRepository.findByIdAndAccount_Id(carteId, accountId);
     }
 
+    public Cart createCart(Cart carte){
+        return cRepository.save(carte);
+    }
+
 }
