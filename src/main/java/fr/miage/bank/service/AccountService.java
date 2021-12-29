@@ -36,7 +36,7 @@ public class AccountService {
     }
 
     public Iterable<Operation> findAllOperations(String id){
-        return oRepository.findAllByCompteOwner_IBAN(id);
+        return oRepository.findAllByCompteCreditor_IBAN(id);
     }
 
     public Account updateAccount(Account account){

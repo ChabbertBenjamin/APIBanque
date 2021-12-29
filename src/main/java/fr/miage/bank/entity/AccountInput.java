@@ -15,7 +15,7 @@ import java.util.Date;
 public class AccountInput {
     @Size(min = 3)
     private String IBAN;
-
+/*
     @NotNull
     private String lastname;
 
@@ -33,11 +33,11 @@ public class AccountInput {
 
     @Size(min = 10, max = 10)
     private String noTel;
-
+*/
     @Size(min = 5, max = 10)
     private String secret;
 
     private double solde;
-
+    private String UserId;
 
 }

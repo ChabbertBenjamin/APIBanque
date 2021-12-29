@@ -20,10 +20,11 @@ public class Cart {
     private int crypto;
     private boolean freeze;
     private boolean localisation;
-    private int plafond;
+    private double plafond;
     private boolean contactLess;
     private boolean virtual;
 
     @ManyToOne
+    @JoinColumn(name = "user_IBAN")
     private Account account;
 }

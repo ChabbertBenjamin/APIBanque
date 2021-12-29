@@ -1,8 +1,12 @@
-INSERT INTO account (lastname, firstname, birthdate, country, no_passeport, no_tel, secret, IBAN, solde) VALUES
-    ('Chabbert', 'Benjamin', '1998-06-13', 'France', '2', '0600000000','1234','546784651184',50.0);
+INSERT INTO user (lastname, firstname, birthdate, email, password,country, no_passeport, no_tel) VALUES
+    ('Chabbert', 'Benjamin', '1998-06-13', 'benjamin@chabbert.fr', '1234','France', '2', '0600000000'),
+    ('Test', 'Thomas',  '1997-08-20', 'thomas@test.fr', '1234','France', '3', '0600000011');
+INSERT INTO account (secret, IBAN, solde,user_id) VALUES
+    ('1234','546784651184',50.0,1),
+    ('0123','546784651183',50.0,2);
 
-INSERT INTO cart (id, code, crypto, freeze, localisation, plafond, contact_less, virtual) VALUES
-    (1, 1234, 123, false, false, 500, true, false);
+INSERT INTO cart (id, code, crypto, freeze, localisation, plafond, contact_less, virtual, user_IBAN) VALUES
+    (1, 1234, 123, false, false, 500, true, false,'546784651184');
 
-INSERT INTO operation (date, time, text, amount, taux, IBAN_creditor, name_creditor, category, country) VALUES
-    (CURRENT_DATE(), Current_Timestamp(), 'virement noel', 30, 1, '123', 'Thomas', 'Noel', 'France');
+INSERT INTO operation (date, text, amount, taux, creditor_account_iban, name_creditor, category, country) VALUES
+    (Current_Timestamp(), 'virement noel', 30, 1, '546784651183', 'Thomas', 'Noel', 'France');

@@ -4,7 +4,9 @@ import fr.miage.bank.assembler.AccountAssembler;
 import fr.miage.bank.entity.Account;
 import fr.miage.bank.entity.AccountInput;
 import fr.miage.bank.entity.AccountValidator;
+import fr.miage.bank.entity.User;
 import fr.miage.bank.service.AccountService;
+import fr.miage.bank.service.UserService;
 import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.http.ResponseEntity;
@@ -27,11 +29,13 @@ public class AccountController {
     private final AccountService accountService;
     private final AccountAssembler assembler;
     private final AccountValidator validator;
+    private final UserService userService;
 
-    public AccountController(AccountService accountService, AccountAssembler assembler, AccountValidator validator) {
+    public AccountController(AccountService accountService, AccountAssembler assembler, AccountValidator validator,UserService userService) {
         this.accountService = accountService;
         this.assembler = assembler;
         this.validator = validator;
+        this.userService = userService;
     }
 
     @GetMapping
@@ -51,16 +55,12 @@ public class AccountController {
     @PostMapping
     @Transactional
     public ResponseEntity<?> saveAccount(@RequestBody @Valid AccountInput account) {
+        Optional<User> optionUser = userService.findById(account.getUserId());
         Account account2save = new Account(
                 account.getIBAN(),
-                account.getLastname(),
-                account.getFirstname(),
-                account.getBirthdate(),
-                account.getCountry(),
-                account.getNoPasseport(),
-                account.getNoTel(),
                 account.getSecret(),
-                account.getSolde()
+                account.getSolde(),
+                optionUser.get()
         );
 
         Account saved = accountService.createAccount(account2save);
@@ -114,8 +114,7 @@ public class AccountController {
                 }
             });
 
-            validator.validate(new AccountInput(account.getIBAN(), account.getLastname(), account.getFirstname(), account.getBirthdate(), account.getCountry(),
-                    account.getNoPasseport(), account.getNoTel(), account.getSecret(), account.getSolde()));
+            validator.validate(new AccountInput(account.getIBAN(), account.getSecret(), account.getSolde(),account.getOwner().getId()));
             account.setIBAN(accountIBAN);
             accountService.updateAccount(account);
             return ResponseEntity.ok().build();
