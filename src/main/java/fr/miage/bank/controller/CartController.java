@@ -43,7 +43,7 @@ public class CartController {
     @PostMapping
     @Transactional
     public ResponseEntity<?> createCarte(@RequestBody @Valid CartInput carte, @PathVariable("accountId") String accountId){
-        Optional<Account> optionalAccount = accountService.findById(accountId);
+        Optional<Account> optionalAccount = accountService.findByIBAN(accountId);
 
         Account account = optionalAccount.get();
         Cart carte2save = new Cart(

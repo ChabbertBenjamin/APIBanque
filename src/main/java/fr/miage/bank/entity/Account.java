@@ -17,9 +17,7 @@ public class Account implements Serializable {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private String id;
+    private String IBAN;
 
     private String lastname;
     private String firstname;
@@ -29,5 +27,6 @@ public class Account implements Serializable {
     private String noPasseport;
     private String noTel;
     private String secret;
-    private String IBAN;
+    private double solde;
+
 }

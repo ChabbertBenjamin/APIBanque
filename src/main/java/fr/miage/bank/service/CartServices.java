@@ -14,16 +14,17 @@ public class CartServices {
     private final CartRepository cRepository;
 
     public Iterable<Cart> findAllCartesByAccountId(String accountId){
-        return cRepository.findAllByAccount_Id(accountId);
+        return cRepository.findAllByAccount_IBAN(accountId);
     }
 
     public Optional<Cart> findByIdAndAccountId(String carteId, String accountId){
-        return cRepository.findByIdAndAccount_Id(carteId, accountId);
+        return cRepository.findByIdAndAccount_IBAN(carteId, accountId);
     }
 
     public Cart createCart(Cart carte){
         return cRepository.save(carte);
     }
+
     public boolean existById(String id){
         return cRepository.existsById(id);
     }

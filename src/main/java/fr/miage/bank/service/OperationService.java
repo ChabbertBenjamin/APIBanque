@@ -14,9 +14,9 @@ public class OperationService {
     private final OperationRepository oRepository;
 
     public Iterable<Operation> findAllOperationsByAccountId(String accountId){
-        return oRepository.findAllByCompteOwner_Id(accountId);
+        return oRepository.findAllByCompteOwner_IBAN(accountId);
     }
     public Optional<Operation> findByIdAndCompteOwnerId(String operationId, String accountId){
-        return oRepository.findByIdAndAndCompteOwner_Id(operationId, accountId);
+        return oRepository.findByIdAndAndCompteOwner_IBAN(operationId, accountId);
     }
 }

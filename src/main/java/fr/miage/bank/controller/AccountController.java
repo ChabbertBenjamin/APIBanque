@@ -42,7 +42,7 @@ public class AccountController {
 
     @GetMapping(value = "/{accountId}")
     public ResponseEntity<?> getOneAccountById(@PathVariable("accountId") String id) {
-        return Optional.ofNullable(accountService.findById(id)).filter(Optional::isPresent)
+        return Optional.ofNullable(accountService.findByIBAN(id)).filter(Optional::isPresent)
                 .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -52,7 +52,7 @@ public class AccountController {
     @Transactional
     public ResponseEntity<?> saveAccount(@RequestBody @Valid AccountInput account) {
         Account account2save = new Account(
-                UUID.randomUUID().toString(),
+                account.getIBAN(),
                 account.getLastname(),
                 account.getFirstname(),
                 account.getBirthdate(),
@@ -60,40 +60,40 @@ public class AccountController {
                 account.getNoPasseport(),
                 account.getNoTel(),
                 account.getSecret(),
-                account.getIBAN()
+                account.getSolde()
         );
 
         Account saved = accountService.createAccount(account2save);
 
-        URI location = linkTo(AccountController.class).slash(saved.getId()).toUri();
+        URI location = linkTo(AccountController.class).slash(saved.getIBAN()).toUri();
         return ResponseEntity.created(location).build();
     }
 
 
     @PutMapping(value = "/{accountId}")
     @Transactional
-    public ResponseEntity<?> updateAccount(@RequestBody Account account, @PathVariable("accountId") String accountId) {
+    public ResponseEntity<?> updateAccount(@RequestBody Account account, @PathVariable("accountId") String accountIBAN) {
         Optional<Account> body = Optional.ofNullable(account);
 
         if (!body.isPresent()) {
             return ResponseEntity.badRequest().build();
         }
 
-        if (!accountService.existById(accountId)) {
+        if (!accountService.existByIBAN(accountIBAN)) {
             return ResponseEntity.notFound().build();
         }
 
-        account.setId(accountId);
+        account.setIBAN(accountIBAN);
         Account result = accountService.updateAccount(account);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping(value = "/{accountId}")
     @Transactional
-    public ResponseEntity<?> updateAccountPartiel(@PathVariable("accountId") String accountId,
+    public ResponseEntity<?> updateAccountPartiel(@PathVariable("accountId") String accountIBAN,
                                                   @RequestBody Map<Object, Object> fields) {
 
-        Optional<Account> body = accountService.findById(accountId);
+        Optional<Account> body = accountService.findByIBAN(accountIBAN);
 
         if (body.isPresent()) {
             Account account = body.get();
@@ -114,9 +114,9 @@ public class AccountController {
                 }
             });
 
-            validator.validate(new AccountInput(account.getLastname(), account.getFirstname(), account.getBirthdate(), account.getCountry(),
-                    account.getNoPasseport(), account.getNoTel(), account.getSecret(), account.getIBAN()));
-            account.setId(accountId);
+            validator.validate(new AccountInput(account.getIBAN(), account.getLastname(), account.getFirstname(), account.getBirthdate(), account.getCountry(),
+                    account.getNoPasseport(), account.getNoTel(), account.getSecret(), account.getSolde()));
+            account.setIBAN(accountIBAN);
             accountService.updateAccount(account);
             return ResponseEntity.ok().build();
         }
