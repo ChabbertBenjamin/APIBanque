@@ -21,7 +21,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @ExposesResourceFor(Cart.class)
-@RequestMapping(value = "/accounts/{accountId}/cartes")
+@RequestMapping(value = "users/{userId}/accounts/{accountId}/cartes")
 public class CartController {
     private final CartServices cartServices;
     private final AccountService accountService;
@@ -33,6 +33,7 @@ public class CartController {
         Iterable<Cart> allCartes = cartServices.findAllCartesByAccountId(accountId);
         return ResponseEntity.ok(assembler.toCollectionModel(allCartes));
     }
+
     @GetMapping(value = "/{carteId}")
     public ResponseEntity<?> getOneCarteByIdAndAccountId(@PathVariable("accountId") String accountId, @PathVariable("carteId") String carteId){
         return Optional.ofNullable(cartServices.findByIdAndAccountId(carteId, accountId)).filter(Optional::isPresent)
@@ -42,7 +43,7 @@ public class CartController {
 
     @PostMapping
     @Transactional
-    public ResponseEntity<?> createCarte(@RequestBody @Valid CartInput carte, @PathVariable("accountId") String accountId){
+    public ResponseEntity<?> createCart(@RequestBody @Valid CartInput carte, @PathVariable("userId") String userId, @PathVariable("accountId") String accountId){
         Optional<Account> optionalAccount = accountService.findByIBAN(accountId);
 
         Account account = optionalAccount.get();

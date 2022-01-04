@@ -29,6 +29,9 @@ public class Operation implements Serializable {
     @JoinColumn(name = "creditor_account_iban")
     private Account compteCreditor;
 
+    @ManyToOne
+    @JoinColumn(name = "debitor_account_iban")
+    private Account compteDebiteur;
 
     private String nameCreditor;
 

@@ -19,8 +19,12 @@ public class AccountService {
     private final CartRepository cRepository;
     private final OperationRepository oRepository;
 
-    public Iterable<Account> findAll(){
-        return aRepository.findAll();
+    public Iterable<Account> findAllByUserId(String userId){
+        return aRepository.findAllByOwner_Id(userId);
+    }
+
+    public Optional<Account> findByUserIdAndIban(String userId, String iban){
+        return aRepository.findByOwner_IdAndIBAN(userId, iban);
     }
 
     public Optional<Account> findByIBAN(String id){

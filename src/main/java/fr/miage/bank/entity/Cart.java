@@ -25,6 +25,6 @@ public class Cart {
     private boolean virtual;
 
     @ManyToOne
-    @JoinColumn(name = "user_IBAN")
+    @JoinColumn(name = "account_IBAN")
     private Account account;
 }

@@ -20,11 +20,12 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class AccountAssembler implements RepresentationModelAssembler<Account, EntityModel<Account>> {
     @Override
     public EntityModel<Account> toModel(Account entity) {
+        String userId = entity.getOwner().getId();
         return EntityModel.of(entity,
                 linkTo(methodOn(AccountController.class)
-                        .getOneAccountById(entity.getIBAN())).withSelfRel(),
+                        .getOneAccountById(userId, entity.getIBAN())).withSelfRel(),
                 linkTo(methodOn(AccountController.class)
-                        .getAllAccounts()).withRel("collection"),
+                        .getAllAccountsByUserId(userId)).withRel("collection"),
                 linkTo(methodOn(CartController.class)
                         .getAllCartsByAccountId(entity.getIBAN())).withRel("carts"),
                 linkTo(methodOn(OperationController.class).getAllOperationsByAccountId(entity.getIBAN())).withRel("operations"));
@@ -37,9 +38,11 @@ public class AccountAssembler implements RepresentationModelAssembler<Account, E
                 .map(i -> toModel(i))
                 .collect(Collectors.toList());
 
+        EntityModel<Account> firstAccount = accountModel.get(0);
+
         return CollectionModel.of(accountModel,
                 linkTo(methodOn(AccountController.class)
-                        .getAllAccounts()).withSelfRel());
+                        .getAllAccountsByUserId(firstAccount.getContent().getOwner().getId())).withSelfRel());
     }
 }
 
