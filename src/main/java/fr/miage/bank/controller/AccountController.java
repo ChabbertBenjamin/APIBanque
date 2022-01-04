@@ -59,6 +59,7 @@ public class AccountController {
         Account account2save = new Account(
                 account.getIBAN(),
                 account.getSecret(),
+                account.getCountry(),
                 account.getSolde(),
                 optionUser.get()
         );
@@ -114,7 +115,7 @@ public class AccountController {
                 }
             });
 
-            validator.validate(new AccountInput(account.getIBAN(), account.getSecret(), account.getSolde(),account.getOwner().getId()));
+            validator.validate(new AccountInput(account.getIBAN(), account.getSecret(),account.getCountry(), account.getSolde(),account.getOwner().getId()));
             account.setIBAN(accountIBAN);
             accountService.updateAccount(account);
             return ResponseEntity.ok().build();

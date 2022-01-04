@@ -25,8 +25,7 @@ public class AccountInput {
     @NotNull
     private Date birthdate;
 
-    @NotNull
-    private String country;
+
 
     @Size(min = 5)
     private String noPasseport;
@@ -34,6 +33,10 @@ public class AccountInput {
     @Size(min = 10, max = 10)
     private String noTel;
 */
+
+    @NotNull
+    private String country;
+
     @Size(min = 5, max = 10)
     private String secret;
 

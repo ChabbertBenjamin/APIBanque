@@ -22,10 +22,11 @@ public class Account implements Serializable {
     private String lastname;
     private String firstname;
     private Date birthdate;
-    private String country;
 
     private String noPasseport;
     private String noTel;*/
+
+    private String country;
     private String secret;
     private double solde;
 
