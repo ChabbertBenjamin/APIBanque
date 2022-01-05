@@ -1,4 +1,4 @@
-package fr.miage.bank.entity;
+package fr.miage.bank.input;
 
 import com.sun.istack.NotNull;
 import javax.validation.constraints.Size;

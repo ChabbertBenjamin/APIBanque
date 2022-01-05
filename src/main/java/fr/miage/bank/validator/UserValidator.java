@@ -1,5 +1,7 @@
-package fr.miage.bank.entity;
+package fr.miage.bank.validator;
 
+
+import fr.miage.bank.input.UserInput;
 import org.springframework.stereotype.Service;
 
 import javax.validation.ConstraintViolation;
@@ -8,16 +10,16 @@ import javax.validation.Validator;
 import java.util.Set;
 
 @Service
-public class CartValidator {
+public class UserValidator {
 
-    private Validator validator;
+    private final Validator validator;
 
-    public CartValidator(Validator validator) {
+    public UserValidator(Validator validator) {
         this.validator = validator;
     }
 
-    public void validate(CartInput cart){
-        Set<ConstraintViolation<CartInput>> violations = validator.validate(cart);
+    public void validate(UserInput user){
+        Set<ConstraintViolation<UserInput>> violations = validator.validate(user);
 
         if(!violations.isEmpty()){
             throw new ConstraintViolationException(violations);

@@ -1,4 +1,4 @@
-INSERT INTO user (lastname, firstname, birthdate, email, password,country, no_passeport, no_tel) VALUES
+INSERT INTO user (lastname, firstname, birthdate, email, password,country, no_passport, no_tel) VALUES
     ('Chabbert', 'Benjamin', '1998-06-13', 'benjamin@chabbert.fr', '1234','France', '2', '0600000000'),
     ('Test', 'Thomas',  '1997-08-20', 'thomas@test.fr', '1234','France', '3', '0600000011');
 INSERT INTO account (secret, IBAN, country ,solde,user_id) VALUES

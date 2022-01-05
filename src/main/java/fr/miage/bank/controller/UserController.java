@@ -2,8 +2,8 @@ package fr.miage.bank.controller;
 
 import fr.miage.bank.assembler.UserAssembler;
 import fr.miage.bank.entity.User;
-import fr.miage.bank.entity.UserInput;
-import fr.miage.bank.entity.UserValidator;
+import fr.miage.bank.input.UserInput;
+import fr.miage.bank.validator.UserValidator;
 import fr.miage.bank.service.UserService;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.hateoas.server.ExposesResourceFor;
@@ -56,7 +56,7 @@ public class UserController {
                 user.getFirstname(),
                 user.getBirthdate(),
                 user.getCountry(),
-                user.getNoPasseport(),
+                user.getNoPassport(),
                 user.getNoTel(),
                 user.getEmail(),
                 user.getPassword()
@@ -113,7 +113,7 @@ public class UserController {
             });
 
             validator.validate(new UserInput(user.getLastname(), user.getFirstname(), user.getEmail(),user.getPassword(),user.getBirthdate()
-                 ,user.getCountry(),user.getNoPasseport(),user.getNoTel()));
+                 ,user.getCountry(),user.getNoPassport(),user.getNoTel()));
             user.setId(userId);
             userService.updateUser(user);
             return ResponseEntity.ok().build();

@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -26,7 +25,7 @@ public class User implements Serializable {
     private Date birthdate;
     private String country;
 
-    private String noPasseport;
+    private String noPassport;
     private String noTel;
     private String email;
     private String password;

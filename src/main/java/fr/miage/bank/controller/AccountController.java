@@ -2,8 +2,8 @@ package fr.miage.bank.controller;
 
 import fr.miage.bank.assembler.AccountAssembler;
 import fr.miage.bank.entity.Account;
-import fr.miage.bank.entity.AccountInput;
-import fr.miage.bank.entity.AccountValidator;
+import fr.miage.bank.input.AccountInput;
+import fr.miage.bank.validator.AccountValidator;
 import fr.miage.bank.entity.User;
 import fr.miage.bank.service.AccountService;
 import fr.miage.bank.service.UserService;

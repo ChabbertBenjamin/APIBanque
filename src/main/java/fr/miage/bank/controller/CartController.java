@@ -3,7 +3,7 @@ package fr.miage.bank.controller;
 import fr.miage.bank.assembler.CartAssembler;
 import fr.miage.bank.entity.Account;
 import fr.miage.bank.entity.Cart;
-import fr.miage.bank.entity.CartInput;
+import fr.miage.bank.input.CartInput;
 import fr.miage.bank.service.AccountService;
 import fr.miage.bank.service.CartServices;
 import lombok.RequiredArgsConstructor;

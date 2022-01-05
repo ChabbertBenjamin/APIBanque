@@ -1,4 +1,4 @@
-package fr.miage.bank.entity;
+package fr.miage.bank.input;
 
 import lombok.*;
 
@@ -35,7 +35,7 @@ public class UserInput {
     private String country;
 
     @NotNull
-    private String noPasseport;
+    private String noPassport;
 
     @NotNull
     private String noTel;
