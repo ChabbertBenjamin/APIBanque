@@ -16,8 +16,8 @@ public class CartValidator {
         this.validator = validator;
     }
 
-    public void validate(CartInput carte){
-        Set<ConstraintViolation<CartInput>> violations = validator.validate(carte);
+    public void validate(CartInput cart){
+        Set<ConstraintViolation<CartInput>> violations = validator.validate(cart);
 
         if(!violations.isEmpty()){
             throw new ConstraintViolationException(violations);

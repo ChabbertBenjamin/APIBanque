@@ -18,7 +18,7 @@ public class CartAssembler implements RepresentationModelAssembler<Cart, EntityM
         String userId = entity.getAccount().getOwner().getId();
         return EntityModel.of(entity,
                 linkTo(methodOn(CartController.class)
-                        .getOneCarteByIdAndAccountId(entity.getAccount().getIBAN(), entity.getId())).withSelfRel(),
+                        .getOneCartByIdAndAccountId(entity.getAccount().getIBAN(), entity.getId())).withSelfRel(),
                 linkTo(methodOn(AccountController.class)
                         .getOneAccountById(userId, entity.getAccount().getIBAN())).withRel("account"));
     }

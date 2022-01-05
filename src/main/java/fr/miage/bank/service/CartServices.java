@@ -13,23 +13,23 @@ public class CartServices {
 
     private final CartRepository cRepository;
 
-    public Iterable<Cart> findAllCartesByAccountId(String accountId){
+    public Iterable<Cart> findAllCartsByAccountId(String accountId){
         return cRepository.findAllByAccount_IBAN(accountId);
     }
 
-    public Optional<Cart> findByIdAndAccountId(String carteId, String accountId){
-        return cRepository.findByIdAndAccount_IBAN(carteId, accountId);
+    public Optional<Cart> findByIdAndAccountId(String cartId, String accountId){
+        return cRepository.findByIdAndAccount_IBAN(cartId, accountId);
     }
 
-    public Cart createCart(Cart carte){
-        return cRepository.save(carte);
+    public Cart createCart(Cart cart){
+        return cRepository.save(cart);
     }
 
     public boolean existById(String id){
         return cRepository.existsById(id);
     }
-    public Cart updateCarte(Cart carte){
-        return cRepository.save(carte);
+    public Cart updateCart(Cart cart){
+        return cRepository.save(cart);
     }
 
 }

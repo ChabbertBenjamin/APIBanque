@@ -30,36 +30,36 @@ public class CartController {
 
     @GetMapping
     public ResponseEntity<?> getAllCartsByAccountId(@PathVariable("accountId") String accountId){
-        Iterable<Cart> allCartes = cartServices.findAllCartesByAccountId(accountId);
-        return ResponseEntity.ok(assembler.toCollectionModel(allCartes));
+        Iterable<Cart> allCarts = cartServices.findAllCartsByAccountId(accountId);
+        return ResponseEntity.ok(assembler.toCollectionModel(allCarts));
     }
 
     @GetMapping(value = "/{carteId}")
-    public ResponseEntity<?> getOneCarteByIdAndAccountId(@PathVariable("accountId") String accountId, @PathVariable("carteId") String carteId){
-        return Optional.ofNullable(cartServices.findByIdAndAccountId(carteId, accountId)).filter(Optional::isPresent)
+    public ResponseEntity<?> getOneCartByIdAndAccountId(@PathVariable("accountId") String accountId, @PathVariable("carteId") String cartId){
+        return Optional.ofNullable(cartServices.findByIdAndAccountId(cartId, accountId)).filter(Optional::isPresent)
                 .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     @Transactional
-    public ResponseEntity<?> createCart(@RequestBody @Valid CartInput carte, @PathVariable("userId") String userId, @PathVariable("accountId") String accountId){
+    public ResponseEntity<?> createCart(@RequestBody @Valid CartInput cart, @PathVariable("userId") String userId, @PathVariable("accountId") String accountId){
         Optional<Account> optionalAccount = accountService.findByIBAN(accountId);
 
         Account account = optionalAccount.get();
-        Cart carte2save = new Cart(
+        Cart cart2save = new Cart(
                 UUID.randomUUID().toString(),
-                Integer.parseInt(carte.getCode()),
-                Integer.parseInt(carte.getCrypto()),
-                carte.isBloque(),
-                carte.isLocalisation(),
-                carte.getPlafond(),
-                carte.isSansContact(),
-                carte.isVirtual(),
+                Integer.parseInt(cart.getCode()),
+                Integer.parseInt(cart.getCrypto()),
+                cart.isBloque(),
+                cart.isLocalisation(),
+                cart.getPlafond(),
+                cart.isSansContact(),
+                cart.isVirtual(),
                 account
         );
 
-        Cart saved = cartServices.createCart(carte2save);
+        Cart saved = cartServices.createCart(cart2save);
 
         //Link location = linkTo(CarteController.class).slash(saved.getId()).slash(accountId).withSelfRel();
         //return ResponseEntity.ok(location.withSelfRel());
@@ -69,19 +69,19 @@ public class CartController {
 
     @PutMapping(value = "/{carteId}")
     @Transactional
-    public ResponseEntity<?> updateCarte(@RequestBody Cart carte, @PathVariable("carteId") String carteId){
-        Optional<Cart> body = Optional.ofNullable(carte);
+    public ResponseEntity<?> updateCart(@RequestBody Cart cart, @PathVariable("carteId") String cartId, @PathVariable String accountId, @PathVariable String userId){
+        Optional<Cart> body = Optional.ofNullable(cart);
 
         if(!body.isPresent()){
             return ResponseEntity.badRequest().build();
         }
 
-        if(!cartServices.existById(carteId)){
+        if(!cartServices.existById(cartId)){
             return ResponseEntity.notFound().build();
         }
 
-        carte.setId(carteId);
-        Cart result = cartServices.updateCarte(carte);
+        cart.setId(cartId);
+        Cart result = cartServices.updateCart(cart);
 
         return ResponseEntity.ok().build();
     }
