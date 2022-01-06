@@ -35,4 +35,6 @@ public class Operation implements Serializable {
     private String category;
     private String country;
 
+    private String cartId;
+
 }

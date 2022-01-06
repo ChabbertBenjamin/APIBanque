@@ -6,8 +6,8 @@ INSERT INTO account (secret, IBAN, country ,solde,user_id) VALUES
     ('0123','546784651183','France',500.0,2),
     ('4567','546784651182','USA',110.0,2);
 
-INSERT INTO cart (id, code, crypto, freeze, localisation, plafond, contact_less, virtual, account_IBAN) VALUES
-    (1, 1234, 123, false, false, 500, true, false,'546784651184');
+INSERT INTO cart (code, crypto, freeze, localisation, plafond, contact_less, virtual, account_IBAN) VALUES
+    (1234, 123, false, false, 500, true, false,'546784651184');
 
-INSERT INTO operation (date, text, amount, taux, creditor_account_iban, name_creditor, category, country) VALUES
-    (Current_Timestamp(), 'virement noel', 30, 1, '546784651183', 'Thomas', 'Noel', 'France');
+INSERT INTO operation (date, text, amount, taux, creditor_account_iban, name_creditor, category, country, cart_id) VALUES
+    (Current_Timestamp(), 'virement noel', 30, 1, '546784651183', 'Thomas', 'Noel', 'France',1);

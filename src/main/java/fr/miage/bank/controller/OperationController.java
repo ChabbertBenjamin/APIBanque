@@ -37,12 +37,20 @@ public class OperationController {
         return ResponseEntity.ok(assembler.toCollectionModel(allOperations));
     }
 
+    @GetMapping(value = "/carteId/{carteId}")
+    public ResponseEntity<?> getAllOperationByCartId(@PathVariable("carteId") String cartId){
+        Iterable<Operation> allOperationbyCartId = operationService.findAllByCartId(cartId);
+        return ResponseEntity.ok(allOperationbyCartId);
+    }
+
     @GetMapping(value = "/{operationId}")
     public ResponseEntity<?> getOneOperationById(@PathVariable("accountId") String accountId, @PathVariable("operationId") String operationId){
         return Optional.ofNullable(operationService.findByIdAndCompteOwnerId(operationId, accountId)).filter(Optional::isPresent)
                 .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))
                 .orElse(ResponseEntity.notFound().build());
     }
+
+
 
     @PostMapping
     @Transactional
@@ -63,11 +71,16 @@ public class OperationController {
                 accountDeb,
                 operation.getNameCreditor(),
                 operation.getCategory(),
-                operation.getCategory()
+                operation.getCategory(),
+                operation.getCartId()
         );
 
         Operation saved = operationService.createOperation(operation2save);
 
         return ResponseEntity.ok(saved);
     }
+
+
+
+
 }

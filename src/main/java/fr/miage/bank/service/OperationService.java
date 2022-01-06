@@ -22,4 +22,8 @@ public class OperationService {
     public Operation createOperation(Operation operation){
         return oRepository.save(operation);
     }
+
+    public Iterable<Operation> findAllByCartId(String cartId){
+        return oRepository.getAllByCartId(cartId);
+    }
 }
