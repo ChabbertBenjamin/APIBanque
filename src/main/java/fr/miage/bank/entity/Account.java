@@ -1,11 +1,8 @@
 package fr.miage.bank.entity;
 
 import lombok.*;
-import org.springframework.hateoas.PagedModel;
-
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Date;
 
 @Entity
 @Data

@@ -27,6 +27,9 @@ public class OperationInput {
     private String nameCreditor;
 
     @NotNull
+    private String debtorAccountId;
+
+    @NotNull
     private String category;
 
     @NotNull

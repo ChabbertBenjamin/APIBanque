@@ -1,12 +1,9 @@
 package fr.miage.bank.entity;
 
 import lombok.*;
-import org.springframework.stereotype.Component;
-
 import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Timestamp;
-import java.util.Date;
 
 @Entity
 @Data

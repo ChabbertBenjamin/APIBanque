@@ -8,6 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface CartRepository extends JpaRepository<Cart, String> {
-    public Iterable<Cart> findAllByAccount_IBAN(String id);
-    public Optional<Cart> findByIdAndAccount_IBAN(String cartId, String accountId);
+    Iterable<Cart> findAllByAccount_IBAN(String id);
+    Optional<Cart> findByIdAndAccount_IBAN(String cartId, String accountId);
 }

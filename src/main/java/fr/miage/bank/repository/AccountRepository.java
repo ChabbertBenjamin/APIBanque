@@ -8,8 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface AccountRepository extends JpaRepository <Account, String> {
-    public Iterable<Account> findAllByOwner_Id(String userId);
-
-    public Optional<Account> findByOwner_IdAndIBAN(String userId, String iban);
+    Iterable<Account> findAllByOwner_Id(String userId);
+    Optional<Account> findByOwner_IdAndIBAN(String userId, String iban);
 }
 

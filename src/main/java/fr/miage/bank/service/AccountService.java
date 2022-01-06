@@ -1,8 +1,6 @@
 package fr.miage.bank.service;
 
 import fr.miage.bank.entity.Account;
-import fr.miage.bank.entity.Cart;
-import fr.miage.bank.entity.Operation;
 import fr.miage.bank.repository.AccountRepository;
 import fr.miage.bank.repository.CartRepository;
 import fr.miage.bank.repository.OperationRepository;
@@ -31,16 +29,8 @@ public class AccountService {
         return aRepository.findById(id);
     }
 
-    public Iterable<Cart> findAllCarts(String id){
-        return cRepository.findAllByAccount_IBAN(id);
-    }
-
     public boolean existByIBAN(String id ){
         return aRepository.existsById(id);
-    }
-
-    public Iterable<Operation> findAllOperations(String id){
-        return oRepository.findAllByCompteCreditor_IBAN(id);
     }
 
     public Account updateAccount(Account account){
@@ -49,5 +39,9 @@ public class AccountService {
 
     public Account createAccount(Account account){
         return aRepository.save(account);
+    }
+
+    public Optional<Account> findByIban(String iban){
+        return aRepository.findById(iban);
     }
 }

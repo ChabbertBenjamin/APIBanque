@@ -1,7 +1,6 @@
 package fr.miage.bank.entity;
 
 import lombok.*;
-
 import javax.persistence.*;
 
 @Entity
