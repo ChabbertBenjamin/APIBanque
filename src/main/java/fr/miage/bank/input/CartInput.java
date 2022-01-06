@@ -29,7 +29,7 @@ public class CartInput {
 
     @NotNull
     @Min(0)
-    private int plafond;
+    private double plafond;
 
     @NotNull
     private boolean sansContact;

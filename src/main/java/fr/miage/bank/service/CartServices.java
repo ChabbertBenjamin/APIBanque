@@ -31,5 +31,8 @@ public class CartServices {
     public Cart updateCart(Cart cart){
         return cRepository.save(cart);
     }
+    public void deleteCarte(Cart cart){
+        cRepository.delete(cart);
+    }
 
 }

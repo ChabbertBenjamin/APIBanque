@@ -20,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @ExposesResourceFor(Account.class)
@@ -65,9 +66,9 @@ public class AccountController {
         );
 
         Account saved = accountService.createAccount(account2save);
-
-        URI location = linkTo(AccountController.class).slash(saved.getIBAN()).toUri();
+        URI location = linkTo(methodOn(AccountController.class).getOneAccountById(userId, saved.getIBAN())).toUri();
         return ResponseEntity.created(location).build();
+
     }
 
 

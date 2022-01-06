@@ -16,8 +16,8 @@ public class Cart {
     @Column(name = "id", nullable = false)
     private String id;
 
-    private int code;
-    private int crypto;
+    private String code;
+    private String crypto;
     private boolean freeze;
     private boolean localisation;
     private double plafond;
