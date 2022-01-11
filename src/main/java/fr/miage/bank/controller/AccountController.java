@@ -8,6 +8,7 @@ import fr.miage.bank.entity.User;
 import fr.miage.bank.service.AccountService;
 import fr.miage.bank.service.UserService;
 import org.springframework.hateoas.server.ExposesResourceFor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,12 +41,14 @@ public class AccountController {
     }
 
     @GetMapping
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getAllAccountsByUserId(@PathVariable("userId") String userId) {
         Iterable<Account> allAccounts = accountService.findAllByUserId(userId);
         return ResponseEntity.ok(assembler.toCollectionModel(allAccounts));
     }
 
     @GetMapping(value = "/{accountId}")
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getOneAccountById(@PathVariable("accountId") String userId, @PathVariable("accountId") String iban) {
         return Optional.ofNullable(accountService.findByIBAN(userId)).filter(Optional::isPresent)
                 .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))
@@ -55,6 +58,7 @@ public class AccountController {
 
     @PostMapping
     @Transactional
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> saveAccount(@PathVariable("userId") String userId, @RequestBody @Valid AccountInput account) {
         Optional<User> optionUser = userService.findById(userId);
         Account account2save = new Account(
@@ -74,6 +78,7 @@ public class AccountController {
 
     @PutMapping(value = "/{accountId}")
     @Transactional
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> updateAccount(@PathVariable("userId") String userId, @RequestBody Account account, @PathVariable("accountId") String accountIBAN) {
         Optional<Account> body = Optional.ofNullable(account);
 
@@ -92,6 +97,7 @@ public class AccountController {
 
     @PatchMapping(value = "/{accountId}")
     @Transactional
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> updateAccountPartiel(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIBAN,
                                                   @RequestBody Map<Object, Object> fields) {
 

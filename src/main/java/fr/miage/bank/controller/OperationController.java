@@ -8,6 +8,7 @@ import fr.miage.bank.service.AccountService;
 import fr.miage.bank.service.OperationService;
 import fr.miage.bank.validator.OperationValidator;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
@@ -32,18 +33,21 @@ public class OperationController {
     }
 
     @GetMapping
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getAllOperationsByAccountId(@PathVariable("accountId") String accountId){
         Iterable<Operation> allOperations = operationService.findAllOperationsByAccountId(accountId);
         return ResponseEntity.ok(assembler.toCollectionModel(allOperations));
     }
 
     @GetMapping(value = "/carteId/{carteId}")
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getAllOperationByCartId(@PathVariable("carteId") String cartId){
         Iterable<Operation> allOperationbyCartId = operationService.findAllByCartId(cartId);
         return ResponseEntity.ok(allOperationbyCartId);
     }
 
     @GetMapping(value = "/{operationId}")
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getOneOperationById(@PathVariable("accountId") String accountId, @PathVariable("operationId") String operationId){
         return Optional.ofNullable(operationService.findByIdAndCompteOwnerId(operationId, accountId)).filter(Optional::isPresent)
                 .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))
@@ -54,6 +58,7 @@ public class OperationController {
 
     @PostMapping
     @Transactional
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> createOperation(@RequestBody @Valid OperationInput operation, @PathVariable("userId") String userId, @PathVariable("accountId") String accountIBAN){
         Optional<Account> optionalAccountCred = accountService.findByIban(accountIBAN);
         Account accountCred = optionalAccountCred.get();

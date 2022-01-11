@@ -13,24 +13,6 @@ import lombok.*;
 public class AccountInput {
     @Size(min = 3)
     private String IBAN;
-/*
-    @NotNull
-    private String lastname;
-
-    @Size(min = 2)
-    private String firstname;
-
-    @NotNull
-    private Date birthdate;
-
-
-
-    @Size(min = 5)
-    private String noPasseport;
-
-    @Size(min = 10, max = 10)
-    private String noTel;
-*/
 
     @NotNull
     private String country;

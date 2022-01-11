@@ -10,6 +10,7 @@ import fr.miage.bank.validator.CartValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,12 +35,14 @@ public class CartController {
 
 
     @GetMapping
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getAllCartsByAccountId(@PathVariable("accountId") String accountId){
         Iterable<Cart> allCarts = cartServices.findAllCartsByAccountId(accountId);
         return ResponseEntity.ok(assembler.toCollectionModel(allCarts));
     }
 
     @GetMapping(value = "/{carteId}")
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getOneCartByIdAndAccountId(@PathVariable("accountId") String accountId, @PathVariable("carteId") String cartId){
         return Optional.ofNullable(cartServices.findByIdAndAccountId(cartId, accountId)).filter(Optional::isPresent)
                 .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))
@@ -48,6 +51,7 @@ public class CartController {
 
     @PostMapping
     @Transactional
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> createCart(@RequestBody @Valid CartInput cart, @PathVariable("userId") String userId, @PathVariable("accountId") String accountId){
         Optional<Account> optionalAccount = accountService.findByIBAN(accountId);
 
@@ -74,6 +78,7 @@ public class CartController {
 
     @PutMapping(value = "/{carteId}")
     @Transactional
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> updateCart(@RequestBody Cart cart, @PathVariable("carteId") String cartId, @PathVariable String accountId, @PathVariable String userId){
         Optional<Cart> body = Optional.ofNullable(cart);
 
@@ -93,6 +98,7 @@ public class CartController {
 
     @PatchMapping(value = "/{carteId}")
     @Transactional
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> updateCartePartial(@PathVariable("accountId") String accountIBAN,
                                                 @PathVariable("carteId") String cartId,
                                                 @RequestBody Map<Object, Object> fields){
@@ -130,6 +136,7 @@ public class CartController {
 
     @DeleteMapping(value = "/{carteId}")
     @Transactional
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> deleteCarte(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIban, @PathVariable("carteId") String cartId){
         Optional<Cart> cart = cartServices.findByIdAndAccountId(cartId, accountIban);
         if(cart.isPresent()){

@@ -7,6 +7,8 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 
 @Entity
@@ -25,9 +27,23 @@ public class User implements Serializable {
     private Date birthdate;
     private String country;
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Collection<Role> roles = new ArrayList<>();
+
     private String noPassport;
     private String noTel;
     private String email;
     private String password;
 
+    public User(String id, String lastname, String firstname, Date birthdate,String country, String noPassport, String noTel, String email, String password) {
+        this.id = id;
+        this.lastname = lastname;
+        this.firstname = firstname;
+        this.birthdate = birthdate;
+        this.country = country;
+        this.noPassport = noPassport;
+        this.noTel = noTel;
+        this.email = email;
+        this.password = password;
+    }
 }

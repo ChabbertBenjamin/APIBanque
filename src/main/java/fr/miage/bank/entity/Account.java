@@ -15,13 +15,6 @@ public class Account implements Serializable {
 
     @Id
     private String IBAN;
-/*
-    private String lastname;
-    private String firstname;
-    private Date birthdate;
-
-    private String noPasseport;
-    private String noTel;*/
 
     private String country;
     private String secret;

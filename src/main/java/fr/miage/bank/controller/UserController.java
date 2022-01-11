@@ -5,6 +5,9 @@ import fr.miage.bank.entity.User;
 import fr.miage.bank.input.UserInput;
 import fr.miage.bank.validator.UserValidator;
 import fr.miage.bank.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +23,7 @@ import java.util.*;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
+@RequiredArgsConstructor
 @RestController
 @ExposesResourceFor(User.class)
 @RequestMapping(value = "/users")
@@ -28,12 +32,8 @@ public class UserController {
     private final UserService userService;
     private final UserAssembler assembler;
     private final UserValidator validator;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserController(UserService userService, UserAssembler assembler, UserValidator validator) {
-        this.userService = userService;
-        this.assembler = assembler;
-        this.validator = validator;
-    }
 
     @GetMapping
     public ResponseEntity<?> getAllUsers(){
@@ -42,6 +42,7 @@ public class UserController {
     }
 
     @GetMapping(value = "/{userId}")
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getOneUserById(@PathVariable("userId") String id){
         return Optional.ofNullable(userService.findById(id)).filter(Optional::isPresent)
                 .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))
@@ -59,7 +60,7 @@ public class UserController {
                 user.getNoPassport(),
                 user.getNoTel(),
                 user.getEmail(),
-                user.getPassword()
+                passwordEncoder.encode(user.getPassword())
         );
 
         User saved = userService.createUser(user2save);
@@ -70,6 +71,7 @@ public class UserController {
 
     @PutMapping(value = "/{userId}")
     @Transactional
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> updateUser(@RequestBody User user, @PathVariable("userId") String userId){
         Optional<User> body = Optional.ofNullable(user);
 
@@ -88,6 +90,7 @@ public class UserController {
 
     @PatchMapping(value = "/{userId}")
     @Transactional
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> updateUserPartial(@PathVariable("userId") String userId,
                                                @RequestBody Map<Object, Object> fields){
 
