@@ -4,6 +4,7 @@ import lombok.*;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Optional;
 
 @Entity
 @Data
@@ -28,13 +29,15 @@ public class Operation implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "debitor_account_iban")
-    private Account compteDebiteur;
+    private Account compteDebitor;
 
     private String nameCreditor;
 
     private String category;
     private String country;
 
-    private String cartId;
+    @ManyToOne
+    @JoinColumn(name = "cart_id")
+    private Cart cart;
 
 }

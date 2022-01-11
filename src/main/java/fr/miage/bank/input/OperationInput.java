@@ -1,5 +1,6 @@
 package fr.miage.bank.input;
 
+import fr.miage.bank.entity.Cart;
 import lombok.*;
 import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
@@ -35,5 +36,5 @@ public class OperationInput {
     @NotNull
     private String country;
 
-    private String cartId;
+    private Cart cart;
 }

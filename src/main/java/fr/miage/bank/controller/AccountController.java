@@ -3,12 +3,12 @@ package fr.miage.bank.controller;
 import fr.miage.bank.assembler.AccountAssembler;
 import fr.miage.bank.entity.Account;
 import fr.miage.bank.input.AccountInput;
+import fr.miage.bank.repository.AccountRepository;
+import fr.miage.bank.repository.UserRepository;
 import fr.miage.bank.validator.AccountValidator;
 import fr.miage.bank.entity.User;
-import fr.miage.bank.service.AccountService;
-import fr.miage.bank.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.server.ExposesResourceFor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,32 +25,26 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @ExposesResourceFor(Account.class)
+@RequiredArgsConstructor
 @RequestMapping(value = "/users/{userId}/accounts")
 public class AccountController {
 
-    private final AccountService accountService;
+    private final AccountRepository accountRepository;
     private final AccountAssembler assembler;
     private final AccountValidator validator;
-    private final UserService userService;
-
-    public AccountController(AccountService accountService, AccountAssembler assembler, AccountValidator validator,UserService userService) {
-        this.accountService = accountService;
-        this.assembler = assembler;
-        this.validator = validator;
-        this.userService = userService;
-    }
+    private final UserRepository userRepository;
 
     @GetMapping
-    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getAllAccountsByUserId(@PathVariable("userId") String userId) {
-        Iterable<Account> allAccounts = accountService.findAllByUserId(userId);
+        Iterable<Account> allAccounts = accountRepository.findAllByOwner_Id(userId);
         return ResponseEntity.ok(assembler.toCollectionModel(allAccounts));
     }
 
     @GetMapping(value = "/{accountId}")
-    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> getOneAccountById(@PathVariable("accountId") String userId, @PathVariable("accountId") String iban) {
-        return Optional.ofNullable(accountService.findByIBAN(userId)).filter(Optional::isPresent)
+    //@PreAuthorize("hasPermission(#accountId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> getOneAccountById(@PathVariable("userId") String userId, @PathVariable("accountId") String accountId) {
+        return Optional.of(accountRepository.findById(accountId)).filter(Optional::isPresent)
                 .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -58,9 +52,9 @@ public class AccountController {
 
     @PostMapping
     @Transactional
-    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> saveAccount(@PathVariable("userId") String userId, @RequestBody @Valid AccountInput account) {
-        Optional<User> optionUser = userService.findById(userId);
+        Optional<User> optionUser = userRepository.findById(userId);
         Account account2save = new Account(
                 account.getIBAN(),
                 account.getSecret(),
@@ -69,7 +63,7 @@ public class AccountController {
                 optionUser.get()
         );
 
-        Account saved = accountService.createAccount(account2save);
+        Account saved = accountRepository.save(account2save);
         URI location = linkTo(methodOn(AccountController.class).getOneAccountById(userId, saved.getIBAN())).toUri();
         return ResponseEntity.created(location).build();
 
@@ -78,7 +72,7 @@ public class AccountController {
 
     @PutMapping(value = "/{accountId}")
     @Transactional
-    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> updateAccount(@PathVariable("userId") String userId, @RequestBody Account account, @PathVariable("accountId") String accountIBAN) {
         Optional<Account> body = Optional.ofNullable(account);
 
@@ -86,22 +80,22 @@ public class AccountController {
             return ResponseEntity.badRequest().build();
         }
 
-        if (!accountService.existByIBAN(accountIBAN)) {
+        if (!accountRepository.existsById(accountIBAN)) {
             return ResponseEntity.notFound().build();
         }
 
         account.setIBAN(accountIBAN);
-        Account result = accountService.updateAccount(account);
+        Account result = accountRepository.save(account);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping(value = "/{accountId}")
     @Transactional
-    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> updateAccountPartiel(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIBAN,
                                                   @RequestBody Map<Object, Object> fields) {
 
-        Optional<Account> body = accountService.findByUserIdAndIban(userId, accountIBAN);
+        Optional<Account> body = accountRepository.findByOwner_IdAndIBAN(userId, accountIBAN);
 
         if (body.isPresent()) {
             Account account = body.get();
@@ -124,7 +118,7 @@ public class AccountController {
 
             validator.validate(new AccountInput(account.getIBAN(), account.getSecret(),account.getCountry(), account.getSolde(),account.getOwner().getId()));
             account.setIBAN(accountIBAN);
-            accountService.updateAccount(account);
+            accountRepository.save(account);
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();

@@ -2,11 +2,15 @@ package fr.miage.bank.controller;
 
 import fr.miage.bank.assembler.OperationAssembler;
 import fr.miage.bank.entity.Account;
+import fr.miage.bank.entity.Cart;
 import fr.miage.bank.entity.Operation;
+import fr.miage.bank.entity.User;
 import fr.miage.bank.input.OperationInput;
-import fr.miage.bank.service.AccountService;
-import fr.miage.bank.service.OperationService;
+import fr.miage.bank.repository.AccountRepository;
+import fr.miage.bank.repository.CartRepository;
+import fr.miage.bank.repository.OperationRepository;
 import fr.miage.bank.validator.OperationValidator;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -18,38 +22,34 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping(value = "/users/{userId}/accounts/{accountId}/operations")
 public class OperationController {
-    private final OperationService operationService;
+    private final OperationRepository operationRepository;
     private final OperationAssembler assembler;
     private final OperationValidator validator;
-    private final AccountService accountService;
+    private final AccountRepository accountService;
+    private final CartRepository cartRepository;
 
-    public OperationController(OperationService operationService, OperationAssembler assembler, OperationValidator validator, AccountService accountService) {
-        this.operationService = operationService;
-        this.assembler = assembler;
-        this.validator = validator;
-        this.accountService = accountService;
-    }
 
     @GetMapping
-    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> getAllOperationsByAccountId(@PathVariable("accountId") String accountId){
-        Iterable<Operation> allOperations = operationService.findAllOperationsByAccountId(accountId);
+    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> getAllOperationsByAccountId(@PathVariable("accountId") String accountId, @PathVariable String userId){
+        Iterable<Operation> allOperations = operationRepository.findAllByCompteCreditor_IBAN(accountId);
         return ResponseEntity.ok(assembler.toCollectionModel(allOperations));
     }
 
-    @GetMapping(value = "/carteId/{carteId}")
-    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> getAllOperationByCartId(@PathVariable("carteId") String cartId){
-        Iterable<Operation> allOperationbyCartId = operationService.findAllByCartId(cartId);
-        return ResponseEntity.ok(allOperationbyCartId);
+    @GetMapping(value = "/carte/{carteId}")
+    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> getAllOperationByCartId(@PathVariable("carteId") String cartId, @PathVariable("accountId") String accountId, @PathVariable("userId") String userId){
+        Iterable<Operation> allOperationCartId = operationRepository.getAllByCartId(cartId);
+        return ResponseEntity.ok(allOperationCartId);
     }
 
     @GetMapping(value = "/{operationId}")
-    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getOneOperationById(@PathVariable("accountId") String accountId, @PathVariable("operationId") String operationId){
-        return Optional.ofNullable(operationService.findByIdAndCompteOwnerId(operationId, accountId)).filter(Optional::isPresent)
+        return Optional.ofNullable(operationRepository.findByIdAndCompteCreditor_IBAN(operationId, accountId)).filter(Optional::isPresent)
                 .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -58,14 +58,15 @@ public class OperationController {
 
     @PostMapping
     @Transactional
-    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> createOperation(@RequestBody @Valid OperationInput operation, @PathVariable("userId") String userId, @PathVariable("accountId") String accountIBAN){
-        Optional<Account> optionalAccountCred = accountService.findByIban(accountIBAN);
+    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> createOperation(@RequestBody @Valid OperationInput operation, @PathVariable("accountId") String accountIBAN){
+        Optional<Account> optionalAccountCred = accountService.findById(accountIBAN);
         Account accountCred = optionalAccountCred.get();
 
-        Optional<Account> optionalAccountDeb = accountService.findByIban(operation.getDebtorAccountId());
+        Optional<Account> optionalAccountDeb = accountService.findById(operation.getDebtorAccountId());
+        Optional<Cart> optionalCart = cartRepository.findById(operation.getDebtorAccountId());
         Account accountDeb = optionalAccountDeb.get();
-
+        Cart cart = optionalCart.get();
         Operation operation2save = new Operation(
                 UUID.randomUUID().toString(),
                 new Timestamp(System.currentTimeMillis()),
@@ -77,10 +78,10 @@ public class OperationController {
                 operation.getNameCreditor(),
                 operation.getCategory(),
                 operation.getCategory(),
-                operation.getCartId()
+                cart
         );
 
-        Operation saved = operationService.createOperation(operation2save);
+        Operation saved = operationRepository.save(operation2save);
 
         return ResponseEntity.ok(saved);
     }

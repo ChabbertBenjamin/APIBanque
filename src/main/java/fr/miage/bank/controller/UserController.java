@@ -3,8 +3,8 @@ package fr.miage.bank.controller;
 import fr.miage.bank.assembler.UserAssembler;
 import fr.miage.bank.entity.User;
 import fr.miage.bank.input.UserInput;
+import fr.miage.bank.repository.UserRepository;
 import fr.miage.bank.validator.UserValidator;
-import fr.miage.bank.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,7 +29,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 @RequestMapping(value = "/users")
 public class UserController {
 
-    private final UserService userService;
+    private final UserRepository userRepository;
     private final UserAssembler assembler;
     private final UserValidator validator;
     private final PasswordEncoder passwordEncoder;
@@ -37,14 +37,14 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<?> getAllUsers(){
-        Iterable<User> allUsers = userService.findAll();
+        Iterable<User> allUsers = userRepository.findAll();
         return ResponseEntity.ok(assembler.toCollectionModel(allUsers));
     }
 
     @GetMapping(value = "/{userId}")
-    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getOneUserById(@PathVariable("userId") String id){
-        return Optional.ofNullable(userService.findById(id)).filter(Optional::isPresent)
+        return Optional.of(userRepository.findById(id)).filter(Optional::isPresent)
                 .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -63,7 +63,7 @@ public class UserController {
                 passwordEncoder.encode(user.getPassword())
         );
 
-        User saved = userService.createUser(user2save);
+        User saved = userRepository.save(user2save);
 
         URI location = linkTo(UserController.class).slash(saved.getId()).toUri();
         return ResponseEntity.created(location).build();
@@ -71,7 +71,7 @@ public class UserController {
 
     @PutMapping(value = "/{userId}")
     @Transactional
-    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> updateUser(@RequestBody User user, @PathVariable("userId") String userId){
         Optional<User> body = Optional.ofNullable(user);
 
@@ -79,22 +79,22 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         }
 
-        if(!userService.existById(userId)){
+        if(!userRepository.existsById(userId)){
             return ResponseEntity.notFound().build();
         }
 
         user.setId(userId);
-        User result = userService.updateUser(user);
+        User result = userRepository.save(user);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping(value = "/{userId}")
     @Transactional
-    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> updateUserPartial(@PathVariable("userId") String userId,
                                                @RequestBody Map<Object, Object> fields){
 
-        Optional<User> body = userService.findById(userId);
+        Optional<User> body = userRepository.findById(userId);
 
         if(body.isPresent()){
             User user = body.get();
@@ -118,7 +118,7 @@ public class UserController {
             validator.validate(new UserInput(user.getLastname(), user.getFirstname(), user.getEmail(),user.getPassword(),user.getBirthdate()
                  ,user.getCountry(),user.getNoPassport(),user.getNoTel()));
             user.setId(userId);
-            userService.updateUser(user);
+            userRepository.save(user);
             return ResponseEntity.ok().build();
         }
 
