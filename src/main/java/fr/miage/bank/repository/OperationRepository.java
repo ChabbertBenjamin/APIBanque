@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface OperationRepository extends JpaRepository<Operation, String> {
     Iterable<Operation> findAllByCompteCreditor_IBAN(String id);
     Optional<Operation> findByIdAndCompteCreditor_IBAN(String operationId, String accountId);
-    List<Operation> getAllByCartId(String cartId);
+    List<Operation> getAllByCartIdAndCompteCreditor_IBAN(String cartId, String accountId);
     //Optional<Operation> findByIdAndCartId(String id, Cart cart);
 }
