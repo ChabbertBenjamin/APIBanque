@@ -48,7 +48,7 @@ public class OperationController {
 
     @GetMapping(value = "/{operationId}")
     @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> getOneOperationById(@PathVariable("accountId") String accountId, @PathVariable("operationId") String operationId){
+    public ResponseEntity<?> getOneOperationById(@PathVariable("accountId") String accountId, @PathVariable("operationId") String operationId, @PathVariable String userId){
         return Optional.ofNullable(operationRepository.findByIdAndCompteCreditor_IBAN(operationId, accountId)).filter(Optional::isPresent)
                 .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))
                 .orElse(ResponseEntity.notFound().build());
@@ -59,7 +59,7 @@ public class OperationController {
     @PostMapping
     @Transactional
     //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> createOperation(@RequestBody @Valid OperationInput operation, @PathVariable("accountId") String accountIBAN){
+    public ResponseEntity<?> createOperation(@RequestBody @Valid OperationInput operation, @PathVariable("accountId") String accountIBAN, @PathVariable String userId){
         Optional<Account> optionalAccountCred = accountService.findById(accountIBAN);
         Account accountCred = optionalAccountCred.get();
 
