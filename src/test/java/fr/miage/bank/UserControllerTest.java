@@ -1,9 +1,6 @@
 package fr.miage.bank;
 
 import fr.miage.bank.entity.User;
-import fr.miage.bank.repository.AccountRepository;
-import fr.miage.bank.repository.CartRepository;
-import fr.miage.bank.repository.OperationRepository;
 import fr.miage.bank.repository.UserRepository;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
@@ -21,10 +18,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class APIBanqueTests {
+class UserControllerTest {
 
 	@LocalServerPort
 	int port;
+
+	@Autowired
+	UserRepository userRepository;
 
 	@BeforeEach
 	public void setupContext(){
@@ -33,12 +33,6 @@ class APIBanqueTests {
 
 	@Test
 	public void getAllUsersTest(){
-/*
-		User user1 = new User("5", "Parker", "Peter", new Date(), "France", "12534534","0606060606","peter@gmail.fr","1234");
-		ur.save(user1);
-		System.out.println(user1.getId());
-		System.out.println(user1.getLastname());
-*/
 		Response response = when().get("users")
 				.then()
 				.statusCode(HttpStatus.SC_OK)
@@ -46,6 +40,21 @@ class APIBanqueTests {
 				.response();
 		String jsonAsString = response.asString();
 		assertThat(jsonAsString, containsString("lastname"));
+	}
+
+
+	@Test
+	public void getOneUserByIdTest(){
+		User user1 = new User("1", "Parker", "Peter", new Date(), "France", "12534534","0606060606","peter@gmail.fr","1234");
+		userRepository.save(user1);
+		Response response = when().get("users/"+user1.getId())
+				.then()
+				.statusCode(HttpStatus.SC_OK)
+				.extract()
+				.response();
+		String jsonAsString = response.asString();
+		assertThat(jsonAsString, containsString(user1.getFirstname()));
+
 	}
 
 
