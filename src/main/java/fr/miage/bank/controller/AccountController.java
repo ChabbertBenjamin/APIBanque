@@ -116,7 +116,7 @@ public class AccountController {
                 }
             });
 
-            validator.validate(new AccountInput(account.getIBAN(), account.getSecret(),account.getCountry(), account.getSolde(),account.getOwner().getId()));
+            validator.validate(new AccountInput(account.getIBAN(), account.getSecret(),account.getCountry(), account.getSolde(),account.getOwner()));
             account.setIBAN(accountIBAN);
             accountRepository.save(account);
             return ResponseEntity.ok().build();

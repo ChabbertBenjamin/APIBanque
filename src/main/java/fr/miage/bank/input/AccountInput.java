@@ -2,6 +2,8 @@ package fr.miage.bank.input;
 
 import com.sun.istack.NotNull;
 import javax.validation.constraints.Size;
+
+import fr.miage.bank.entity.User;
 import lombok.*;
 
 
@@ -21,6 +23,6 @@ public class AccountInput {
     private String secret;
 
     private double solde;
-    private String UserId;
+    private User user;
 
 }
