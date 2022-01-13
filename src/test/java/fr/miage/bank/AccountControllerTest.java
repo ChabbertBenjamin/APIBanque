@@ -37,12 +37,35 @@ class AccountControllerTest {
     }
 
     @Test
-    public void getAllAccountsByUserId(){
+    public void getAllAccountsByUserIdTest(){
         User user1 = new User("1", "Parker", "Peter", new Date(), "France", "12534534","0606060606","peter@gmail.fr","1234");
         userRepository.save(user1);
 
-        Account account1 = new Account("1234","France","123",50.0,user1);
-        Response response = when().get("users/"+user1.getId()+"/accounts")
+        Account account1 = new Account("FR123456789","France","123",50.0,user1);
+        accountRepository.save(account1);
+
+        Account account2 = new Account("FR987654321","France","123",50.0,user1);
+        accountRepository.save(account2);
+        Response response = when().get("users/"+user1.getId()+"/accounts/")
+                .then()
+                .statusCode(HttpStatus.SC_OK)
+                .extract()
+                .response();
+        String jsonAsString = response.asString();
+        assertThat(jsonAsString, containsString(account1.getIBAN()));
+        assertThat(jsonAsString, containsString(account2.getIBAN()));
+
+    }
+
+
+    @Test
+    public void getOneAccountByIdTest(){
+        User user1 = new User("1", "Parker", "Peter", new Date(), "France", "12534534","0606060606","peter@gmail.fr","1234");
+        userRepository.save(user1);
+
+        Account account1 = new Account("FR123456789","France","123",50.0,user1);
+        accountRepository.save(account1);
+        Response response = when().get("users/"+user1.getId()+"/accounts/"+account1.getIBAN())
                 .then()
                 .statusCode(HttpStatus.SC_OK)
                 .extract()

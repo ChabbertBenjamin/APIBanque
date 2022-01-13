@@ -33,21 +33,21 @@ public class OperationController {
 
 
     @GetMapping
-    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getAllOperationsByAccountId(@PathVariable("accountId") String accountId, @PathVariable String userId){
         Iterable<Operation> allOperations = operationRepository.findAllByCompteCreditor_IBAN(accountId);
         return ResponseEntity.ok(assembler.toCollectionModel(allOperations));
     }
 
     @GetMapping(value = "/carte/{carteId}")
-    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getAllOperationByCartId(@PathVariable("carteId") String cartId, @PathVariable("accountId") String accountId, @PathVariable("userId") String userId){
         Iterable<Operation> allOperationCartId = operationRepository.getAllByCartIdAndCompteCreditor_IBAN(cartId, accountId);
         return ResponseEntity.ok(allOperationCartId);
     }
 
     @GetMapping(value = "/{operationId}")
-    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getOneOperationById(@PathVariable("accountId") String accountId, @PathVariable("operationId") String operationId, @PathVariable String userId){
         return Optional.ofNullable(operationRepository.findByIdAndCompteCreditor_IBAN(operationId, accountId)).filter(Optional::isPresent)
                 .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))

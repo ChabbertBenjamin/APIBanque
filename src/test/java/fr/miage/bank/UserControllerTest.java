@@ -33,6 +33,8 @@ class UserControllerTest {
 
 	@Test
 	public void getAllUsersTest(){
+		User user1 = new User("1", "Parker", "Peter", new Date(), "France", "12534534","0606060606","peter@gmail.fr","1234");
+		userRepository.save(user1);
 		Response response = when().get("users")
 				.then()
 				.statusCode(HttpStatus.SC_OK)
@@ -56,6 +58,5 @@ class UserControllerTest {
 		assertThat(jsonAsString, containsString(user1.getFirstname()));
 
 	}
-
 
 }
