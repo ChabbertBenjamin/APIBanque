@@ -1,5 +1,6 @@
 package fr.miage.bank.input;
 
+import fr.miage.bank.entity.Account;
 import fr.miage.bank.entity.Cart;
 import lombok.*;
 import javax.validation.constraints.NotNull;
@@ -25,10 +26,10 @@ public class OperationInput {
     private double taux;
 
     @NotNull
-    private String nameCreditor;
+    private Account creditorAccount;
 
     @NotNull
-    private String debtorAccountId;
+    private Account debitorAccount;
 
     @NotNull
     private String category;
@@ -36,5 +37,4 @@ public class OperationInput {
     @NotNull
     private String country;
 
-    private Cart cart;
 }

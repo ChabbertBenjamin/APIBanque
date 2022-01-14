@@ -3,7 +3,6 @@ package fr.miage.bank.controller;
 import fr.miage.bank.assembler.CartAssembler;
 import fr.miage.bank.entity.Account;
 import fr.miage.bank.entity.Cart;
-import fr.miage.bank.entity.Operation;
 import fr.miage.bank.input.CartInput;
 import fr.miage.bank.repository.AccountRepository;
 import fr.miage.bank.repository.CartRepository;
@@ -56,24 +55,33 @@ public class CartController {
     public ResponseEntity<?> createCart(@RequestBody @Valid CartInput cart, @PathVariable("userId") String userId, @PathVariable("accountId") String accountId){
         Optional<Account> optionalAccount = accountRepository.findById(accountId);
 
+        Date expirationDate = new Date();
+        Calendar c = Calendar.getInstance();
+        c.setTime(expirationDate);
+        if(cart.isVirtual()){
+            // Virtuel pour 15 jours
+            c.add(Calendar.DATE, 15);
+        }else{
+            // physique pour 3 ans
+            c.add(Calendar.DATE, 365*3);
+        }
+        expirationDate = c.getTime();
+
         Account account = optionalAccount.get();
         Cart cart2save = new Cart(
                 UUID.randomUUID().toString(),
                 cart.getCode(),
                 cart.getCrypto(),
-                cart.isBloque(),
+                cart.isFreeze(),
                 cart.isLocalisation(),
                 cart.getPlafond(),
-                cart.isSansContact(),
+                cart.isContactLess(),
                 cart.isVirtual(),
+                expirationDate,
+                cart.getNum(),
                 account
         );
-
         Cart saved = cartRepository.save(cart2save);
-
-        //Link location = linkTo(CarteController.class).slash(saved.getId()).slash(accountId).withSelfRel();
-        //return ResponseEntity.ok(location.withSelfRel());
-
         return ResponseEntity.ok(saved);
     }
 
@@ -126,7 +134,7 @@ public class CartController {
 
             validator.validate(new CartInput(cart.getCode(), cart.getCrypto(), cart.isFreeze(),
                     cart.isLocalisation(), cart.getPlafond(), cart.isContactLess(),
-                    cart.isVirtual()));
+                    cart.isVirtual(),cart.getDateExpiry(),cart.getNum()));
 
             cart.setId(cartId);
             cartRepository.save(cart);
@@ -145,5 +153,102 @@ public class CartController {
         }
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/{carteId}/freeze")
+    @Transactional
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> blockCarte(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIban, @PathVariable("carteId") String cartId) {
+
+
+        Cart cart = verifCart(userId,accountIban,cartId);
+        if(cart==null){
+            return ResponseEntity.notFound().build();
+        }else{
+            cart.setFreeze(true);
+            cartRepository.save(cart);
+            return ResponseEntity.noContent().build();
+        }
+
+    }
+    @PostMapping(value = "/{carteId}/activeLocalisation")
+    @Transactional
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> activeLocalisation(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIban, @PathVariable("carteId") String cartId){
+        Cart cart = verifCart(userId,accountIban,cartId);
+        if(cart==null){
+            return ResponseEntity.notFound().build();
+        }else {
+            cart.setLocalisation(true);
+            cartRepository.save(cart);
+            return ResponseEntity.noContent().build();
+        }
+    }
+    @PostMapping(value = "/{carteId}/desactiveLocalisation")
+    @Transactional
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> desactiveLocalisation(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIban, @PathVariable("carteId") String cartId){
+        Cart cart = verifCart(userId,accountIban,cartId);
+        if(cart==null){
+            return ResponseEntity.notFound().build();
+        }else {
+            cart.setLocalisation(false);
+            cartRepository.save(cart);
+            return ResponseEntity.noContent().build();
+        }
+    }
+    @PostMapping(value = "/{carteId}/setPlafond")
+    @Transactional
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> setPlafond(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIban, @PathVariable("carteId") String cartId,
+                                        @RequestParam("plafond") int plafond) {
+
+        Cart cart = verifCart(userId,accountIban,cartId);
+        if(cart==null){
+            return ResponseEntity.notFound().build();
+        }else {
+            cart.setPlafond(plafond);
+            cartRepository.save(cart);
+            return ResponseEntity.noContent().build();
+        }
+    }
+
+    @PostMapping(value = "/{carteId}/setContactLess")
+    @Transactional
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> setSansContact(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIban, @PathVariable("carteId") String cartId){
+
+        Cart cart = verifCart(userId,accountIban,cartId);
+        if(cart==null){
+            return ResponseEntity.notFound().build();
+        }else {
+            cart.setContactLess(true);
+            cartRepository.save(cart);
+            return ResponseEntity.noContent().build();
+        }
+    }
+
+    @PostMapping(value = "/{carteId}/unsetContactLess")
+    @Transactional
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> unsetSansContact(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIban, @PathVariable("carteId") String cartId){
+
+        Cart cart = verifCart(userId,accountIban,cartId);
+        if(cart==null){
+            return ResponseEntity.notFound().build();
+        }else {
+            cart.setContactLess(false);
+            cartRepository.save(cart);
+            return ResponseEntity.noContent().build();
+        }
+    }
+
+    public Cart verifCart(String userId, String accountIban, String cartId){
+        Optional<Account> optionAccount = accountRepository.findByOwner_IdAndIBAN(userId, accountIban);
+        if(!optionAccount.isPresent()){
+            return null;
+        }
+        Optional<Cart> optionCarte = cartRepository.findByIdAndAccount_IBAN(cartId, accountIban);
+        return optionCarte.orElse(null);
     }
 }

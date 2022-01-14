@@ -49,7 +49,7 @@ public class CartControllerTest {
         Account account1 = new Account("546784651184","France","123",50.0,user1);
         accountRepository.save(account1);
 
-        Cart cart1 = new Cart("1","1234", "123", false, false, 500, true, false,account1);
+        Cart cart1 = new Cart("1","1234", "123", false, false, 500, true, false,null,"1234567891234567",account1);
         cartRepository.save(cart1);
 
         Response response = when().get("users/"+user1.getId()+"/accounts/"+account1.getIBAN()+"/cartes/"+cart1.getId())
@@ -70,10 +70,10 @@ public class CartControllerTest {
         Account account1 = new Account("546784651184","France","123",50.0,user1);
         accountRepository.save(account1);
 
-        Cart cart1 = new Cart("1","1234", "123", false, false, 500, true, false,account1);
+        Cart cart1 = new Cart("1","1234", "123", false, false, 500, true, false,null,"1234567891234567",account1);
         cartRepository.save(cart1);
 
-        Cart cart2= new Cart("2","0000", "456", false, false, 500, true, false,account1);
+        Cart cart2= new Cart("2","0000", "456", false, false, 500, true, false,null,"1234567891234567",account1);
         cartRepository.save(cart2);
 
         Response response = when().get("users/"+user1.getId()+"/accounts/"+account1.getIBAN()+"/cartes")

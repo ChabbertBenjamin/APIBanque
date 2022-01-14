@@ -6,10 +6,13 @@ INSERT INTO account (secret, IBAN, country ,solde,user_id) VALUES
     ('0123','546784651183','France',500.0,2),
     ('4567','546784651182','USA',110.0,2);
 
-INSERT INTO cart (code, crypto, freeze, localisation, plafond, contact_less, virtual, account_IBAN) VALUES
-    (1234, 123, false, false, 500, true, false,'546784651184'),
-    (4567, 456, false, false, 500, true, false,'546784651183');
+INSERT INTO cart (code, crypto, freeze, localisation, plafond, contact_less, virtual, account_IBAN,num,date_expiry) VALUES
+    (1234, 123, false, false, 500, true, false,'546784651184','1234567891234567','2022-01-01'),
+    (4567, 456, false, false, 500, true, false,'546784651183','1234567891234568','2022-01-01');
 
-INSERT INTO operation (date, text, amount, taux, creditor_account_iban,debitor_account_iban, name_creditor, category, country, cart_id) VALUES
-    (Current_Timestamp(), 'payement', 30, 1, '546784651184', '546784651183','Benjamin', 'vente', 'France',1),
-    (Current_Timestamp(), 'remboursement', 30, 1, '546784651183','546784651184','Thomas', 'achat', 'France',2);
+INSERT INTO operation (date, text, amount, taux, creditor_account_iban,debitor_account_iban, category, country) VALUES
+    (Current_Timestamp(), 'payement', 30, 1, '546784651184', '546784651183', 'vente', 'France'),
+    (Current_Timestamp(), 'remboursement', 30, 1, '546784651183','546784651184','achat', 'France');
+
+INSERT INTO payment (id, cart_id, amount, country, crebitor_account_iban, date) VALUES
+    ('1', '1', 10, 'France', '546784651183',Current_Timestamp());

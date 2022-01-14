@@ -2,6 +2,7 @@ package fr.miage.bank.assembler;
 
 import fr.miage.bank.controller.AccountController;
 import fr.miage.bank.controller.CartController;
+import fr.miage.bank.controller.PaymentController;
 import fr.miage.bank.entity.Cart;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -20,7 +21,9 @@ public class CartAssembler implements RepresentationModelAssembler<Cart, EntityM
                 linkTo(methodOn(CartController.class)
                         .getOneCartByIdAndAccountId(entity.getAccount().getIBAN(), entity.getId(),userId)).withSelfRel(),
                 linkTo(methodOn(AccountController.class)
-                        .getOneAccountById(userId, entity.getAccount().getIBAN())).withRel("account"));
+                        .getOneAccountById(userId, entity.getAccount().getIBAN())).withRel("account"),
+                linkTo(methodOn(PaymentController.class)
+                        .getAllPaiementsByCarteId(userId, entity.getAccount().getIBAN(),entity.getId())).withRel("paiement"));
     }
 
     @Override

@@ -24,4 +24,12 @@ public class Account implements Serializable {
     @JoinColumn(name = "user_id")
     private User owner;
 
+
+    public void debiterCompte(double amount){
+        this.solde -= amount;
+    }
+
+    public void crediterCompte(double amount, double taux){
+        this.solde += (amount*taux);
+    }
 }

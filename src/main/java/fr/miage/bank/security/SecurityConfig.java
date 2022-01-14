@@ -41,6 +41,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         httpSecurity.authorizeRequests().antMatchers("/carts").denyAll();
         httpSecurity.authorizeRequests().antMatchers("/operations").denyAll();
         httpSecurity.authorizeRequests().antMatchers("/accounts").denyAll();
+        httpSecurity.authorizeRequests().antMatchers("/paiements").denyAll();
 
         httpSecurity.authorizeRequests().anyRequest().permitAll();
 

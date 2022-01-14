@@ -59,17 +59,17 @@ public class OperationControllerTest {
         Account account2 = new Account("FR987654321","France","123",50.0,user1);
         accountRepository.save(account2);
 
-        Cart cart1 = new Cart("1","1234", "123", false, false, 500, true, false,account1);
+        Cart cart1 = new Cart("1","1234", "123", false, false, 500, true, false,null,"1234567891234567",account1);
         cartRepository.save(cart1);
 
-        Cart cart2 = new Cart("2","4567", "456", false, false, 500, true, false,account2);
+        Cart cart2 = new Cart("2","4567", "456", false, false, 500, true, false,null,"1234567891234568",account2);
         cartRepository.save(cart2);
 
         Timestamp t1 = new Timestamp(45664565L);
         Timestamp t2 = new Timestamp(456648876554L);
-        Operation operation1 = new Operation("1",t1, "payement", 30, 1, account1,account2 ,"Benjamin", "Noel", "France",cart1);
+        Operation operation1 = new Operation("1",t1, "payement", 30, 1, account1,account2 , "Noel", "France");
         operationRepository.save(operation1);
-        Operation operation2 = new Operation("2",t2, "cadeau", 30, 1, account1,account2 ,"Benjamin", "Noel", "France",cart1);
+        Operation operation2 = new Operation("2",t2, "cadeau", 30, 1, account1,account2 , "Noel", "France");
         operationRepository.save(operation2);
 
         Response response = when().get("users/"+user1.getId()+"/accounts/"+account1.getIBAN()+"/operations")
@@ -95,13 +95,13 @@ public class OperationControllerTest {
         Account account2 = new Account("FR987654321","France","123",50.0,user1);
         accountRepository.save(account2);
 
-        Cart cart1 = new Cart("1","1234", "123", false, false, 500, true, false,account1);
+        Cart cart1 = new Cart("1","1234", "123", false, false, 500, true, false,null,"1234567891234567",account1);
         cartRepository.save(cart1);
 
 
         Timestamp t1 = new Timestamp(45664565L);
 
-        Operation operation1 = new Operation("1",t1, "payement", 30, 1, account1,account2 ,"Benjamin", "Noel", "France",cart1);
+        Operation operation1 = new Operation("1",t1, "payement", 30, 1, account1,account2 , "Noel", "France");
         operationRepository.save(operation1);
 
 

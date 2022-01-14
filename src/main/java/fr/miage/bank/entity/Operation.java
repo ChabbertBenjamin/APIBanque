@@ -31,13 +31,7 @@ public class Operation implements Serializable {
     @JoinColumn(name = "debitor_account_iban")
     private Account compteDebitor;
 
-    private String nameCreditor;
-
     private String category;
     private String country;
-
-    @ManyToOne
-    @JoinColumn(name = "cart_id")
-    private Cart cart;
 
 }

@@ -4,7 +4,6 @@ import fr.miage.bank.assembler.OperationAssembler;
 import fr.miage.bank.entity.Account;
 import fr.miage.bank.entity.Cart;
 import fr.miage.bank.entity.Operation;
-import fr.miage.bank.entity.User;
 import fr.miage.bank.input.OperationInput;
 import fr.miage.bank.repository.AccountRepository;
 import fr.miage.bank.repository.CartRepository;
@@ -12,7 +11,6 @@ import fr.miage.bank.repository.OperationRepository;
 import fr.miage.bank.validator.OperationValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.transaction.Transactional;
@@ -28,7 +26,7 @@ public class OperationController {
     private final OperationRepository operationRepository;
     private final OperationAssembler assembler;
     private final OperationValidator validator;
-    private final AccountRepository accountService;
+    private final AccountRepository accountRepository;
     private final CartRepository cartRepository;
 
 
@@ -38,13 +36,13 @@ public class OperationController {
         Iterable<Operation> allOperations = operationRepository.findAllByCompteCreditor_IBAN(accountId);
         return ResponseEntity.ok(assembler.toCollectionModel(allOperations));
     }
-
+/*
     @GetMapping(value = "/carte/{carteId}")
     //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getAllOperationByCartId(@PathVariable("carteId") String cartId, @PathVariable("accountId") String accountId, @PathVariable("userId") String userId){
         Iterable<Operation> allOperationCartId = operationRepository.getAllByCartIdAndCompteCreditor_IBAN(cartId, accountId);
         return ResponseEntity.ok(allOperationCartId);
-    }
+    }*/
 
     @GetMapping(value = "/{operationId}")
     //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
@@ -60,30 +58,34 @@ public class OperationController {
     @Transactional
     //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> createOperation(@RequestBody @Valid OperationInput operation, @PathVariable("accountId") String accountIBAN, @PathVariable String userId){
-        Optional<Account> optionalAccountCred = accountService.findById(accountIBAN);
+        Optional<Account> optionalAccountCred = accountRepository.findById(accountIBAN);
         Account accountCred = optionalAccountCred.get();
 
-        Optional<Account> optionalAccountDeb = accountService.findById(operation.getDebtorAccountId());
-        Optional<Cart> optionalCart = cartRepository.findById(operation.getDebtorAccountId());
+        Optional<Account> optionalAccountDeb = accountRepository.findById(operation.getDebitorAccount().getIBAN());
+        Optional<Cart> optionalCart = cartRepository.findById(operation.getDebitorAccount().getIBAN());
         Account accountDeb = optionalAccountDeb.get();
-        Cart cart = optionalCart.get();
-        Operation operation2save = new Operation(
-                UUID.randomUUID().toString(),
-                new Timestamp(System.currentTimeMillis()),
-                operation.getText(),
-                operation.getAmount(),
-                operation.getTaux(),
-                accountCred,
-                accountDeb,
-                operation.getNameCreditor(),
-                operation.getCategory(),
-                operation.getCategory(),
-                cart
-        );
+        //Cart cart = optionalCart.get();
+        if(accountDeb.getSolde() >= operation.getAmount()) {
+            Operation operation2save = new Operation(
+                    UUID.randomUUID().toString(),
+                    new Timestamp(System.currentTimeMillis()),
+                    operation.getText(),
+                    operation.getAmount(),
+                    operation.getTaux(),
+                    accountCred,
+                    accountDeb,
+                    operation.getCategory(),
+                    operation.getCountry()
+            );
 
-        Operation saved = operationRepository.save(operation2save);
+            Operation saved = operationRepository.save(operation2save);
 
-        return ResponseEntity.ok(saved);
+            accountDeb.debiterCompte(operation.getAmount());
+            accountCred.crediterCompte(operation.getAmount(), operation.getTaux());
+            return ResponseEntity.ok(saved);
+        }else {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
 

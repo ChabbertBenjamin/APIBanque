@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -14,15 +16,15 @@ import javax.validation.constraints.Size;
 public class CartInput {
 
     @NotNull
-    @Size(min = 4, max = 4)
+    @Pattern(regexp = "([0-9]{4})")
     private String code;
 
     @NotNull
-    @Size(min = 3, max = 3)
+    @Pattern(regexp = "([0-9]{3})")
     private String crypto;
 
     @NotNull
-    private boolean bloque;
+    private boolean freeze;
 
     @NotNull
     private boolean localisation;
@@ -32,8 +34,15 @@ public class CartInput {
     private double plafond;
 
     @NotNull
-    private boolean sansContact;
+    private boolean contactLess;
 
     @NotNull
     private boolean virtual;
+
+    @NotNull
+    private Date dateExpiry;
+
+    @NotNull
+    @Pattern(regexp = "([0-9]{16})")
+    private String num;
 }
