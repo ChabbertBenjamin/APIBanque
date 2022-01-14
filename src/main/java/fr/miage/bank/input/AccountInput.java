@@ -13,16 +13,14 @@ import lombok.*;
 @Getter
 @Setter
 public class AccountInput {
-    @Size(min = 3)
-    private String IBAN;
-
     @NotNull
     private String country;
 
     @Size(min = 5, max = 10)
     private String secret;
-
+    @NotNull
     private double solde;
+    @NotNull
     private User user;
 
 }

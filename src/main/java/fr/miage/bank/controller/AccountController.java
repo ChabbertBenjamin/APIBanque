@@ -56,7 +56,7 @@ public class AccountController {
     public ResponseEntity<?> saveAccount(@PathVariable("userId") String userId, @RequestBody @Valid AccountInput account) {
         Optional<User> optionUser = userRepository.findById(userId);
         Account account2save = new Account(
-                account.getIBAN(),
+                UUID.randomUUID().toString(),
                 account.getSecret(),
                 account.getCountry(),
                 account.getSolde(),
@@ -116,7 +116,7 @@ public class AccountController {
                 }
             });
 
-            validator.validate(new AccountInput(account.getIBAN(), account.getSecret(),account.getCountry(), account.getSolde(),account.getOwner()));
+            validator.validate(new AccountInput(account.getSecret(),account.getCountry(), account.getSolde(),account.getOwner()));
             account.setIBAN(accountIBAN);
             accountRepository.save(account);
             return ResponseEntity.ok().build();
