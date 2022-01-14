@@ -11,6 +11,7 @@ import fr.miage.bank.repository.UserRepository;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,7 +86,7 @@ public class OperationControllerTest {
 
 
     @Test
-    public void getOneAccountByIdTest(){
+    public void getOneOperationByIdTest(){
         User user1 = new User("1", "Parker", "Peter", new Date(), "France", "12534534","0606060606","peter@gmail.fr","1234");
         userRepository.save(user1);
 
@@ -100,9 +101,12 @@ public class OperationControllerTest {
 
 
         Timestamp t1 = new Timestamp(45664565L);
-
+        Timestamp t2 = new Timestamp(8976218646L);
         Operation operation1 = new Operation("1",t1, "payement", 30, 1, account1,account2 , "Noel", "France");
         operationRepository.save(operation1);
+
+        Operation operation2 = new Operation("2",t2, "cadeau", 30, 1, account1,account2 , "Noel", "France");
+        operationRepository.save(operation2);
 
 
         Response response = when().get("users/"+user1.getId()+"/accounts/"+account1.getIBAN()+"/operations/"+operation1.getId())
@@ -111,7 +115,8 @@ public class OperationControllerTest {
                 .extract()
                 .response();
         String jsonAsString = response.asString();
-        assertThat(jsonAsString, containsString(operation1.getText()));
+        assertThat(jsonAsString, containsString("payement"));
+        assertThat(jsonAsString, Matchers.not(containsString("cadeau")));
 
     }
 

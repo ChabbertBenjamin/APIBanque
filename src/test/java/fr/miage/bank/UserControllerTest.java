@@ -9,6 +9,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,13 +56,16 @@ class UserControllerTest {
 	public void getOneUserByIdTest(){
 		User user1 = new User("1", "Parker", "Peter", new Date(), "France", "12534534","0606060606","peter@gmail.fr","1234");
 		userRepository.save(user1);
+		User user2 = new User("2", "Holland", "Tom", new Date(), "Angleterre", "88888888","0606060606","tom@gmail.fr","4567");
+		userRepository.save(user2);
 		Response response = when().get("users/"+user1.getId())
 				.then()
 				.statusCode(HttpStatus.SC_OK)
 				.extract()
 				.response();
 		String jsonAsString = response.asString();
-		assertThat(jsonAsString, containsString(user1.getFirstname()));
+		assertThat(jsonAsString, containsString("Peter"));
+		assertThat(jsonAsString, Matchers.not(containsString("Tom")));
 
 	}
 

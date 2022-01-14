@@ -9,6 +9,7 @@ import fr.miage.bank.repository.UserRepository;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,13 +53,18 @@ public class CartControllerTest {
         Cart cart1 = new Cart("1","1234", "123", false, false, 500, true, false,null,"1234567891234567",account1);
         cartRepository.save(cart1);
 
+        Cart cart2 = new Cart("2","4567", "456", false, false, 500, true, false,null,"1234567891234568",account1);
+        cartRepository.save(cart2);
+
         Response response = when().get("users/"+user1.getId()+"/accounts/"+account1.getIBAN()+"/cartes/"+cart1.getId())
                 .then()
                 .statusCode(HttpStatus.SC_OK)
                 .extract()
                 .response();
         String jsonAsString = response.asString();
-        assertThat(jsonAsString, containsString(cart1.getCrypto()));
+        assertThat(jsonAsString, containsString("1234567891234567"));
+        assertThat(jsonAsString, Matchers.not(containsString("1234567891234568")));
+
 
     }
 

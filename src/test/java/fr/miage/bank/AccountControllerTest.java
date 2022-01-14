@@ -12,6 +12,7 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,13 +72,18 @@ class AccountControllerTest {
 
         Account account1 = new Account("FR123456789","France","123",50.0,user1);
         accountRepository.save(account1);
+
+        Account account2 = new Account("FR123456788","France","456",50.0,user1);
+        accountRepository.save(account2);
+
         Response response = when().get("users/"+user1.getId()+"/accounts/"+account1.getIBAN())
                 .then()
                 .statusCode(HttpStatus.SC_OK)
                 .extract()
                 .response();
         String jsonAsString = response.asString();
-        assertThat(jsonAsString, containsString(account1.getIBAN()));
+        assertThat(jsonAsString, containsString("FR123456789"));
+        assertThat(jsonAsString, Matchers.not(containsString("FR123456788")));
 
     }
 
