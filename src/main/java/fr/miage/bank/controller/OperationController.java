@@ -36,13 +36,6 @@ public class OperationController {
         Iterable<Operation> allOperations = operationRepository.findAllByCompteCreditor_IBAN(accountId);
         return ResponseEntity.ok(assembler.toCollectionModel(allOperations));
     }
-/*
-    @GetMapping(value = "/carte/{carteId}")
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> getAllOperationByCartId(@PathVariable("carteId") String cartId, @PathVariable("accountId") String accountId, @PathVariable("userId") String userId){
-        Iterable<Operation> allOperationCartId = operationRepository.getAllByCartIdAndCompteCreditor_IBAN(cartId, accountId);
-        return ResponseEntity.ok(allOperationCartId);
-    }*/
 
     @GetMapping(value = "/{operationId}")
     //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
@@ -52,7 +45,12 @@ public class OperationController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-
+    @GetMapping("/categorie/{categoryName}")
+    public ResponseEntity<?> getAllOperationsByAccountIdAndCategory(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIban, @PathVariable("categoryName") String category){
+        Iterable<Operation> allOperations;
+        allOperations = operationRepository.findAllOperationsByCompteCreditor_IBANAndCategory(accountIban, category);
+        return ResponseEntity.ok(assembler.toCollectionModel(allOperations));
+    }
 
     @PostMapping
     @Transactional
