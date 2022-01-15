@@ -3,6 +3,7 @@ package fr.miage.bank.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @Entity
@@ -22,7 +23,7 @@ public class Payment {
     private Cart cart;
 
     private Timestamp date;
-    private double amount;
+    private BigDecimal amount;
 
     private String country;
 

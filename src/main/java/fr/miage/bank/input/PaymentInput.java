@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @Data
@@ -17,7 +18,7 @@ public class PaymentInput {
 
     @NotNull
     @Min(0)
-    private double amount;
+    private BigDecimal amount;
 
     @NotNull
     private String country;
