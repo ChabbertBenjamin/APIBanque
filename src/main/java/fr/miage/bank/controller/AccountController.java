@@ -94,8 +94,8 @@ public class AccountController {
     //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> updateAccountPartiel(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIBAN,
                                                   @RequestBody Map<Object, Object> fields) {
-
-        Optional<Account> body = accountRepository.findByOwner_IdAndIBAN(userId, accountIBAN);
+        Optional<User> user = userRepository.findById(userId);
+        Optional<Account> body = accountRepository.findByOwnerAndIBAN(user, accountIBAN);
 
         if (body.isPresent()) {
             Account account = body.get();
