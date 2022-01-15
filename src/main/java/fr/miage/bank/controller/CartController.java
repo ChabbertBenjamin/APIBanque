@@ -3,9 +3,11 @@ package fr.miage.bank.controller;
 import fr.miage.bank.assembler.CartAssembler;
 import fr.miage.bank.entity.Account;
 import fr.miage.bank.entity.Cart;
+import fr.miage.bank.entity.User;
 import fr.miage.bank.input.CartInput;
 import fr.miage.bank.repository.AccountRepository;
 import fr.miage.bank.repository.CartRepository;
+import fr.miage.bank.repository.UserRepository;
 import fr.miage.bank.validator.CartValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.server.ExposesResourceFor;
@@ -30,6 +32,7 @@ import java.util.*;
 public class CartController {
     private final CartRepository cartRepository;
     private final AccountRepository accountRepository;
+    private final UserRepository userRepository;
     private final CartAssembler assembler;
     private final CartValidator validator;
 
@@ -244,7 +247,8 @@ public class CartController {
     }
 
     public Cart verifCart(String userId, String accountIban, String cartId){
-        Optional<Account> optionAccount = accountRepository.findByOwner_IdAndIBAN(userId, accountIban);
+        Optional<User> optionalUser = userRepository.findById(userId);
+        Optional<Account> optionAccount = accountRepository.findByOwnerAndIBAN(optionalUser, accountIban);
         if(!optionAccount.isPresent()){
             return null;
         }
