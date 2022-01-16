@@ -1,7 +1,6 @@
 package fr.miage.bank.assembler;
 
 import fr.miage.bank.controller.AccountController;
-import fr.miage.bank.controller.OperationController;
 import fr.miage.bank.entity.Operation;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;

@@ -2,7 +2,9 @@ package fr.miage.bank.input;
 
 import lombok.*;
 
+import javax.persistence.Column;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.Date;
 
@@ -22,6 +24,8 @@ public class UserInput {
     private String firstname;
 
     @NotNull
+    @Column(unique=true)
+    @Pattern(regexp = "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")
     private String email;
 
     @NotNull
@@ -38,5 +42,6 @@ public class UserInput {
     private String noPassport;
 
     @NotNull
+    @Pattern(regexp = "([0-9]*)")
     private String noTel;
 }

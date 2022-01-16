@@ -21,9 +21,13 @@ import javax.validation.Valid;
 
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,14 +42,14 @@ public class CartController {
 
 
     @GetMapping
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getAllCartsByAccountId(@PathVariable("accountId") String accountId, @PathVariable String userId){
         Iterable<Cart> allCarts = cartRepository.findAllByAccount_IBAN(accountId);
         return ResponseEntity.ok(assembler.toCollectionModel(allCarts));
     }
 
     @GetMapping(value = "/{carteId}")
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getOneCartByIdAndAccountId(@PathVariable("accountId") String accountId, @PathVariable("carteId") String cartId, @PathVariable String userId){
         return Optional.ofNullable(cartRepository.findByIdAndAccount_IBAN(cartId, accountId)).filter(Optional::isPresent)
                 .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))
@@ -54,10 +58,9 @@ public class CartController {
 
     @PostMapping
     @Transactional
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> createCart(@RequestBody @Valid CartInput cart, @PathVariable("userId") String userId, @PathVariable("accountId") String accountId){
         Optional<Account> optionalAccount = accountRepository.findById(accountId);
-
         Date expirationDate = new Date();
         Calendar c = Calendar.getInstance();
         c.setTime(expirationDate);
@@ -69,7 +72,6 @@ public class CartController {
             c.add(Calendar.DATE, 365*3);
         }
         expirationDate = c.getTime();
-
         Account account = optionalAccount.get();
         Cart cart2save = new Cart(
                 UUID.randomUUID().toString(),
@@ -85,40 +87,33 @@ public class CartController {
                 account
         );
         Cart saved = cartRepository.save(cart2save);
-        return ResponseEntity.ok(saved);
+        URI location = linkTo(methodOn(CartController.class).getOneCartByIdAndAccountId(accountId, saved.getId(), userId)).toUri();
+        return ResponseEntity.created(location).build();
     }
 
     @PutMapping(value = "/{carteId}")
     @Transactional
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> updateCart(@RequestBody Cart cart, @PathVariable("carteId") String cartId, @PathVariable String accountId, @PathVariable String userId){
         Optional<Cart> body = Optional.ofNullable(cart);
-
         if(!body.isPresent()){
             return ResponseEntity.badRequest().build();
         }
-
         if(!cartRepository.existsById(cartId)){
             return ResponseEntity.notFound().build();
         }
-
         cart.setId(cartId);
         Cart result = cartRepository.save(cart);
-
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping(value = "/{carteId}")
     @Transactional
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> updateCartePartial(@PathVariable("accountId") String accountIBAN,
-                                                @PathVariable("carteId") String cartId,
-                                                @RequestBody Map<Object, Object> fields){
-        Optional<Cart> body = cartRepository.findByIdAndAccount_IBAN(cartId, accountIBAN);
-
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> updateCartePartial(@PathVariable("userId") String userId, @PathVariable("accountId") String accountId, @PathVariable("carteId") String cartId, @RequestBody Map<Object, Object> fields){
+        Optional<Cart> body = cartRepository.findByIdAndAccount_IBAN(cartId, accountId);
         if(body.isPresent()){
             Cart cart = body.get();
-
             fields.forEach((f,v) -> {
                 Field field = ReflectionUtils.findField(Cart.class, f.toString());
                 field.setAccessible(true);
@@ -134,11 +129,9 @@ public class CartController {
                     ReflectionUtils.setField(field, cart, v);
                 }
             });
-
             validator.validate(new CartInput(cart.getCode(), cart.getCrypto(), cart.isFreeze(),
                     cart.isLocalisation(), cart.getPlafond(), cart.isContactLess(),
                     cart.isVirtual(),cart.getDateExpiry(),cart.getNum()));
-
             cart.setId(cartId);
             cartRepository.save(cart);
             return ResponseEntity.ok().build();
@@ -148,23 +141,20 @@ public class CartController {
 
     @DeleteMapping(value = "/{carteId}")
     @Transactional
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> deleteCarte(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIban, @PathVariable("carteId") String cartId){
-        Optional<Cart> cart = cartRepository.findByIdAndAccount_IBAN(cartId, accountIban);
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> deleteCarte(@PathVariable("userId") String userId, @PathVariable("accountId") String accountId, @PathVariable("carteId") String cartId){
+        Optional<Cart> cart = cartRepository.findByIdAndAccount_IBAN(cartId, accountId);
         if(cart.isPresent()){
             cartRepository.delete(cart.get());
         }
-
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping(value = "/{carteId}/freeze")
     @Transactional
     @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> blockCarte(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIban, @PathVariable("carteId") String cartId) {
-
-
-        Cart cart = verifCart(userId,accountIban,cartId);
+    public ResponseEntity<?> blockCarte(@PathVariable("userId") String userId, @PathVariable("accountId") String accountId, @PathVariable("carteId") String cartId) {
+        Cart cart = verifCart(userId,accountId,cartId);
         if(cart==null){
             return ResponseEntity.notFound().build();
         }else{
@@ -177,8 +167,8 @@ public class CartController {
     @PostMapping(value = "/{carteId}/activeLocalisation")
     @Transactional
     @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> activeLocalisation(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIban, @PathVariable("carteId") String cartId){
-        Cart cart = verifCart(userId,accountIban,cartId);
+    public ResponseEntity<?> activeLocalisation(@PathVariable("userId") String userId, @PathVariable("accountId") String accountId, @PathVariable("carteId") String cartId){
+        Cart cart = verifCart(userId,accountId,cartId);
         if(cart==null){
             return ResponseEntity.notFound().build();
         }else {
@@ -190,8 +180,8 @@ public class CartController {
     @PostMapping(value = "/{carteId}/desactiveLocalisation")
     @Transactional
     @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> desactiveLocalisation(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIban, @PathVariable("carteId") String cartId){
-        Cart cart = verifCart(userId,accountIban,cartId);
+    public ResponseEntity<?> desactiveLocalisation(@PathVariable("userId") String userId, @PathVariable("accountId") String accountId, @PathVariable("carteId") String cartId){
+        Cart cart = verifCart(userId,accountId,cartId);
         if(cart==null){
             return ResponseEntity.notFound().build();
         }else {
@@ -203,10 +193,8 @@ public class CartController {
     @PostMapping(value = "/{carteId}/setPlafond")
     @Transactional
     @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> setPlafond(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIban, @PathVariable("carteId") String cartId,
-                                        @RequestParam("plafond") int plafond) {
-
-        Cart cart = verifCart(userId,accountIban,cartId);
+    public ResponseEntity<?> setPlafond(@PathVariable("userId") String userId, @PathVariable("accountId") String accountId, @PathVariable("carteId") String cartId, @RequestParam("plafond") int plafond) {
+        Cart cart = verifCart(userId,accountId,cartId);
         if(cart==null){
             return ResponseEntity.notFound().build();
         }else {
@@ -219,9 +207,8 @@ public class CartController {
     @PostMapping(value = "/{carteId}/setContactLess")
     @Transactional
     @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> setSansContact(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIban, @PathVariable("carteId") String cartId){
-
-        Cart cart = verifCart(userId,accountIban,cartId);
+    public ResponseEntity<?> setSansContact(@PathVariable("userId") String userId, @PathVariable("accountId") String accountId, @PathVariable("carteId") String cartId){
+        Cart cart = verifCart(userId,accountId,cartId);
         if(cart==null){
             return ResponseEntity.notFound().build();
         }else {
@@ -234,9 +221,8 @@ public class CartController {
     @PostMapping(value = "/{carteId}/unsetContactLess")
     @Transactional
     @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> unsetSansContact(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIban, @PathVariable("carteId") String cartId){
-
-        Cart cart = verifCart(userId,accountIban,cartId);
+    public ResponseEntity<?> unsetSansContact(@PathVariable("userId") String userId, @PathVariable("accountId") String accountId, @PathVariable("carteId") String cartId){
+        Cart cart = verifCart(userId,accountId,cartId);
         if(cart==null){
             return ResponseEntity.notFound().build();
         }else {
@@ -246,13 +232,14 @@ public class CartController {
         }
     }
 
-    public Cart verifCart(String userId, String accountIban, String cartId){
+    // Retourne la carte si elle est valide, sinon retourne null
+    public Cart verifCart(String userId, String accountId, String cartId){
         Optional<User> optionalUser = userRepository.findById(userId);
-        Optional<Account> optionAccount = accountRepository.findByOwnerAndIBAN(optionalUser, accountIban);
+        Optional<Account> optionAccount = accountRepository.findByOwnerAndIBAN(optionalUser, accountId);
         if(!optionAccount.isPresent()){
             return null;
         }
-        Optional<Cart> optionCarte = cartRepository.findByIdAndAccount_IBAN(cartId, accountIban);
+        Optional<Cart> optionCarte = cartRepository.findByIdAndAccount_IBAN(cartId, accountId);
         return optionCarte.orElse(null);
     }
 }

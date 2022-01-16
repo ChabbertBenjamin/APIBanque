@@ -38,15 +38,11 @@ public class UserPermissionEvaluator implements TargetedPermissionEvaluator {
         switch (perm) {
             case "MANAGE_USER" :
                 authorized = springUser.getId().equals(user.getId());
-                System.out.println("J'autorise (switch) : " + authorized);
                 break;
 
             default:
                 break;
         }
-
-        System.out.println("J'autorise : " + authorized);
-
         return authorized;
     }
 }

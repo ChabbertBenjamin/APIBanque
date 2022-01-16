@@ -38,10 +38,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         httpSecurity.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         httpSecurity.authorizeRequests().antMatchers("/login/**", "/token/refresh/**").permitAll();
+        httpSecurity.authorizeRequests().antMatchers("/carts/**").denyAll();
+        httpSecurity.authorizeRequests().antMatchers("/operations/**").denyAll();
+        httpSecurity.authorizeRequests().antMatchers("/accounts/**").denyAll();
+        httpSecurity.authorizeRequests().antMatchers("/paiements/**").denyAll();
+        httpSecurity.authorizeRequests().antMatchers("/users/").denyAll();
         httpSecurity.authorizeRequests().antMatchers("/carts").denyAll();
         httpSecurity.authorizeRequests().antMatchers("/operations").denyAll();
         httpSecurity.authorizeRequests().antMatchers("/accounts").denyAll();
         httpSecurity.authorizeRequests().antMatchers("/paiements").denyAll();
+        httpSecurity.authorizeRequests().antMatchers("/users").denyAll();
 
         httpSecurity.authorizeRequests().anyRequest().permitAll();
 

@@ -34,17 +34,17 @@ public class UserController {
     private final UserValidator validator;
     private final PasswordEncoder passwordEncoder;
 
-
     @GetMapping
     public ResponseEntity<?> getAllUsers(){
         Iterable<User> allUsers = userRepository.findAll();
         return ResponseEntity.ok(assembler.toCollectionModel(allUsers));
     }
 
+
     @GetMapping(value = "/{userId}")
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> getOneUserById(@PathVariable("userId") String id){
-        return Optional.of(userRepository.findById(id)).filter(Optional::isPresent)
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> getOneUserById(@PathVariable("userId") String userId){
+        return Optional.of(userRepository.findById(userId)).filter(Optional::isPresent)
                 .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -71,18 +71,15 @@ public class UserController {
 
     @PutMapping(value = "/{userId}")
     @Transactional
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> updateUser(@RequestBody User user, @PathVariable("userId") String userId){
         Optional<User> body = Optional.ofNullable(user);
-
         if(!body.isPresent()){
             return ResponseEntity.badRequest().build();
         }
-
         if(!userRepository.existsById(userId)){
             return ResponseEntity.notFound().build();
         }
-
         user.setId(userId);
         User result = userRepository.save(user);
         return ResponseEntity.ok().build();
@@ -90,19 +87,14 @@ public class UserController {
 
     @PatchMapping(value = "/{userId}")
     @Transactional
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> updateUserPartial(@PathVariable("userId") String userId,
-                                               @RequestBody Map<Object, Object> fields){
-
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> updateUserPartial(@PathVariable("userId") String userId, @RequestBody Map<Object, Object> fields){
         Optional<User> body = userRepository.findById(userId);
-
         if(body.isPresent()){
             User user = body.get();
-
             fields.forEach((f,v) -> {
                 Field field = ReflectionUtils.findField(User.class, f.toString());
                 field.setAccessible(true);
-
                 if(field.getType() == Date.class){
                     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.FRENCH);
                     try {
@@ -114,14 +106,12 @@ public class UserController {
                     ReflectionUtils.setField(field, user, v);
                 }
             });
-
             validator.validate(new UserInput(user.getLastname(), user.getFirstname(), user.getEmail(),user.getPassword(),user.getBirthdate()
                  ,user.getCountry(),user.getNoPassport(),user.getNoTel()));
             user.setId(userId);
             userRepository.save(user);
             return ResponseEntity.ok().build();
         }
-
         return ResponseEntity.notFound().build();
     }
 }

@@ -12,6 +12,7 @@ import fr.miage.bank.repository.PaymentRepository;
 import fr.miage.bank.validator.PaymentValidator;
 import org.springframework.hateoas.server.ExposesResourceFor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -19,7 +20,6 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.net.URI;
 import java.sql.Timestamp;
-import java.util.Date;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,7 +29,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @ExposesResourceFor(Payment.class)
-@RequestMapping(value = "/users/{userId}/accounts/{accountIban}/cartes/{carteId}/paiements")
+@RequestMapping(value = "/users/{userId}/accounts/{accountId}/cartes/{carteId}/paiements")
 public class PaymentController {
 
     private final PaymentRepository paymentRepository;
@@ -51,15 +51,15 @@ public class PaymentController {
     }
 
     @GetMapping
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> getAllPaiementsByCarteId(@PathVariable("userId") String userId, @PathVariable("accountIban") String iban, @PathVariable("carteId") String carteId){
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> getAllPaiementsByCarteId(@PathVariable("userId") String userId, @PathVariable("accountId") String accountId, @PathVariable("carteId") String carteId){
         Iterable<Payment> allPaiements = paymentRepository.getAllByCart_Id(carteId);
         return ResponseEntity.ok(allPaiements);
     }
 
     @GetMapping(value = "/{paiementId}")
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> getOnePaiementById(@PathVariable("userId") String userId, @PathVariable("accountIban") String accountId, @PathVariable("carteId") String carteId,
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> getOnePaiementById(@PathVariable("userId") String userId, @PathVariable("accountId") String accountId, @PathVariable("carteId") String carteId,
                                                 @PathVariable("paiementId") String paiementId){
         Optional<Cart> optionalCarte = cartRepository.findByIdAndAccount_IBAN(carteId, accountId);
         return Optional.ofNullable(paymentRepository.findByIdAndCart(paiementId, optionalCarte.get())).filter(Optional::isPresent)
@@ -69,23 +69,24 @@ public class PaymentController {
 
     @PostMapping
     @Transactional
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> createPaiement(@RequestBody @Valid PaymentInput paiement, @PathVariable("userId") String userId, @PathVariable("accountIban") String accountIban,
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> createPaiement(@RequestBody @Valid PaymentInput paiement, @PathVariable("userId") String userId, @PathVariable("accountId") String accountId,
                                             @PathVariable("carteId") String carteId){
 
 
-
-        Optional<Cart> optionalCart = cartRepository.findByIdAndAccount_IBAN(carteId, accountIban);
+        Optional<Cart> optionalCart = cartRepository.findByIdAndAccount_IBAN(carteId, accountId);
         Cart cart = optionalCart.get();
         Account compteDeb = cart.getAccount();
         Optional<Account> optionalAccount = accountRepository.findById(paiement.getIbanCreditor());
         Account compteCred = optionalAccount.get();
 
+        // Verification de la date d'expriration de la carte NON FONCTIONNELLE
         /*
         Date today = new Date();
         if(today.after(cart.getDateExpiry()) || cart.isFreeze()){
             return ResponseEntity.badRequest().build();
         }*/
+
         if(cart.isLocalisation()){
             String paysDeb = compteDeb.getCountry();
             String source = "";
@@ -113,18 +114,11 @@ public class PaymentController {
                     cible="EUR";
                     break;
             }
-            System.out.println(source);
-            System.out.println(cible);
-            System.out.println(paysDeb);
-            System.out.println(paysCred);
             if(!Objects.equals(paysDeb, paysCred)){
                 String url = "http://localhost:8000/taux-devise/source/{source}/cible/{cible}";
                 DeviseConversionBean response = template.getForObject(url, DeviseConversionBean.class, source, cible);
-                System.out.println(paiement.getAmount());
                 DeviseConversionBean dvb = new DeviseConversionBean(response.getId(), source, cible, response.getTauxConversion(), paiement.getAmount(),
                         paiement.getAmount().multiply(response.getTauxConversion()), response.getPort());
-
-                System.out.println(dvb.getTotal());
                 paiement.setAmount(dvb.getTotal());
             }
         }
@@ -147,8 +141,7 @@ public class PaymentController {
             if(cart.isVirtual()){
                 cartRepository.delete(cart);
             }
-            URI location = linkTo(methodOn(PaymentController.class).getOnePaiementById(userId, accountIban, carteId, saved.getId())).toUri();
-            System.out.println(location);
+            URI location = linkTo(methodOn(PaymentController.class).getOnePaiementById(userId, accountId, carteId, saved.getId())).toUri();
             return ResponseEntity.created(location).build();
         }else {
             return ResponseEntity.badRequest().build();

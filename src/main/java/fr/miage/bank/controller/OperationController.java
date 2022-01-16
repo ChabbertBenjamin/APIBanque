@@ -2,7 +2,6 @@ package fr.miage.bank.controller;
 
 import fr.miage.bank.assembler.OperationAssembler;
 import fr.miage.bank.entity.Account;
-import fr.miage.bank.entity.Cart;
 import fr.miage.bank.entity.DeviseConversionBean;
 import fr.miage.bank.entity.Operation;
 import fr.miage.bank.input.OperationInput;
@@ -11,6 +10,7 @@ import fr.miage.bank.repository.CartRepository;
 import fr.miage.bank.repository.OperationRepository;
 import fr.miage.bank.validator.OperationValidator;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -46,14 +46,14 @@ public class OperationController {
 
 
     @GetMapping
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getAllOperationsByAccountId(@PathVariable("accountId") String accountId, @PathVariable String userId) {
         Iterable<Operation> allOperations = operationRepository.findAllByCompteCreditor_IBAN(accountId);
         return ResponseEntity.ok(assembler.toCollectionModel(allOperations));
     }
 
     @GetMapping(value = "/{operationId}")
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getOneOperationById(@PathVariable("accountId") String accountId, @PathVariable("operationId") String operationId, @PathVariable String userId) {
         return Optional.ofNullable(operationRepository.findByIdAndCompteCreditor_IBAN(operationId, accountId)).filter(Optional::isPresent)
                 .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))
@@ -61,17 +61,18 @@ public class OperationController {
     }
 
     @GetMapping("/categorie/{categoryName}")
-    public ResponseEntity<?> getAllOperationsByAccountIdAndCategory(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIban, @PathVariable("categoryName") String category) {
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> getAllOperationsByAccountIdAndCategory(@PathVariable("userId") String userId, @PathVariable("accountId") String accountId, @PathVariable("categoryName") String category) {
         Iterable<Operation> allOperations;
-        allOperations = operationRepository.findAllOperationsByCompteCreditor_IBANAndCategory(accountIban, category);
+        allOperations = operationRepository.findAllOperationsByCompteCreditor_IBANAndCategory(accountId, category);
         return ResponseEntity.ok(assembler.toCollectionModel(allOperations));
     }
 
     @PostMapping
     @Transactional
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> createOperation(@RequestBody @Valid OperationInput operation, @PathVariable("accountId") String accountIBAN, @PathVariable String userId) {
-        Optional<Account> optionalAccountDeb = accountRepository.findById(accountIBAN);
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> createOperation(@RequestBody @Valid OperationInput operation, @PathVariable("accountId") String accountId, @PathVariable String userId) {
+        Optional<Account> optionalAccountDeb = accountRepository.findById(accountId);
         Account accountDeb = optionalAccountDeb.get();
 
         Optional<Account> optionalAccountCred = accountRepository.findById(operation.getCreditorAccount().getIBAN());
@@ -103,49 +104,32 @@ public class OperationController {
                 cible = "EUR";
                 break;
         }
-        System.out.println(source);
-        System.out.println(cible);
-        System.out.println(paysDeb);
-        System.out.println(paysCred);
         if (!Objects.equals(paysDeb, paysCred)) {
             String url = "http://localhost:8000/taux-devise/source/{source}/cible/{cible}";
             DeviseConversionBean response = template.getForObject(url, DeviseConversionBean.class, source, cible);
-            System.out.println(operation.getAmount());
             DeviseConversionBean dvb = new DeviseConversionBean(response.getId(), source, cible, response.getTauxConversion(), operation.getAmount(),
                     operation.getAmount().multiply(response.getTauxConversion()), response.getPort());
-
-            System.out.println(dvb.getTotal());
             operation.setAmount(dvb.getTotal());
         }
-            //Cart cart = optionalCart.get();
-        System.out.println("IBAN DEBITEUR" + accountDeb.getIBAN());
-        System.out.println("IBAN CREDITEUR" + accountCred.getIBAN());
-            if (accountDeb.getSolde() >= operation.getAmount().doubleValue()) {
-                Operation operation2save = new Operation(
-                        UUID.randomUUID().toString(),
-                        new Timestamp(System.currentTimeMillis()),
-                        operation.getText(),
-                        operation.getAmount(),
-                        operation.getTaux(),
-                        accountDeb,
-                        accountCred,
-                        operation.getCategory(),
-                        operation.getCountry()
-                );
-
-                Operation saved = operationRepository.save(operation2save);
-                accountDeb.debiterCompte(operation.getAmount().doubleValue());
-                accountCred.crediterCompte(operation.getAmount().doubleValue(), operation.getTaux());
-
-                URI location = linkTo(methodOn(OperationController.class).getOneOperationById(saved.getCompteDebitor().getIBAN(), saved.getId(), userId)).toUri();
-                System.out.println(location);
-                return ResponseEntity.created(location).build();
-            } else {
-                return ResponseEntity.badRequest().build();
-            }
+        if (accountDeb.getSolde() >= operation.getAmount().doubleValue()) {
+            Operation operation2save = new Operation(
+                    UUID.randomUUID().toString(),
+                    new Timestamp(System.currentTimeMillis()),
+                    operation.getText(),
+                    operation.getAmount(),
+                    operation.getTaux(),
+                    accountDeb,
+                    accountCred,
+                    operation.getCategory(),
+                    operation.getCountry()
+            );
+            Operation saved = operationRepository.save(operation2save);
+            accountDeb.debiterCompte(operation.getAmount().doubleValue());
+            accountCred.crediterCompte(operation.getAmount().doubleValue(), operation.getTaux());
+            URI location = linkTo(methodOn(OperationController.class).getOneOperationById(saved.getCompteDebitor().getIBAN(), saved.getId(), userId)).toUri();
+            return ResponseEntity.created(location).build();
+        } else {
+            return ResponseEntity.badRequest().build();
         }
-
-
-
-
+    }
 }

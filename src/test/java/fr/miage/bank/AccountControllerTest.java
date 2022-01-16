@@ -95,7 +95,6 @@ class AccountControllerTest {
         AccountInput account = new AccountInput("France","12345",50.0,user);
 
         ObjectMapper map = new ObjectMapper();
-        System.out.println(map.writeValueAsString(account));
         Response response = given()
                 .body(map.writeValueAsString(account))
                 .contentType(ContentType.JSON)
@@ -122,14 +121,7 @@ class AccountControllerTest {
 
         Account account1 = new Account("FR123456789","France","12345",50.0,user);
         accountRepository.save(account1);
-        System.out.println("Avant");
-        System.out.println(account1.getOwner());
-        System.out.println("Après");
         AccountInput account = new AccountInput("Angleterre","12345",50.0,user);
-        System.out.println("REavant");
-        System.out.println(account.getUser());
-        System.out.println("REaprès");
-
         ObjectMapper map = new ObjectMapper();
         Response response = given()
                 .body(map.writeValueAsString(account))

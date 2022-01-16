@@ -9,6 +9,7 @@ import fr.miage.bank.validator.AccountValidator;
 import fr.miage.bank.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.server.ExposesResourceFor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,14 +36,14 @@ public class AccountController {
     private final UserRepository userRepository;
 
     @GetMapping
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getAllAccountsByUserId(@PathVariable("userId") String userId) {
         Iterable<Account> allAccounts = accountRepository.findAllByOwner_Id(userId);
         return ResponseEntity.ok(assembler.toCollectionModel(allAccounts));
     }
 
     @GetMapping(value = "/{accountId}")
-    //@PreAuthorize("hasPermission(#accountId, 'User', 'MANAGE_USER')")
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> getOneAccountById(@PathVariable("userId") String userId, @PathVariable("accountId") String accountId) {
         return Optional.of(accountRepository.findById(accountId)).filter(Optional::isPresent)
                 .map(i -> ResponseEntity.ok(assembler.toModel(i.get())))
@@ -52,7 +53,7 @@ public class AccountController {
 
     @PostMapping
     @Transactional
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
     public ResponseEntity<?> saveAccount(@PathVariable("userId") String userId, @RequestBody @Valid AccountInput account) {
         Optional<User> optionUser = userRepository.findById(userId);
         Account account2save = new Account(
@@ -62,48 +63,39 @@ public class AccountController {
                 account.getSolde(),
                 optionUser.get()
         );
-
         Account saved = accountRepository.save(account2save);
         URI location = linkTo(methodOn(AccountController.class).getOneAccountById(userId, saved.getIBAN())).toUri();
         return ResponseEntity.created(location).build();
-
     }
 
 
     @PutMapping(value = "/{accountId}")
     @Transactional
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> updateAccount(@PathVariable("userId") String userId, @RequestBody Account account, @PathVariable("accountId") String accountIBAN) {
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> updateAccount(@PathVariable("userId") String userId, @RequestBody Account account, @PathVariable("accountId") String accountId) {
         Optional<Account> body = Optional.ofNullable(account);
-
         if (!body.isPresent()) {
             return ResponseEntity.badRequest().build();
         }
-
-        if (!accountRepository.existsById(accountIBAN)) {
+        if (!accountRepository.existsById(accountId)) {
             return ResponseEntity.notFound().build();
         }
-
-        account.setIBAN(accountIBAN);
+        account.setIBAN(accountId);
         Account result = accountRepository.save(account);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping(value = "/{accountId}")
     @Transactional
-    //@PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
-    public ResponseEntity<?> updateAccountPartiel(@PathVariable("userId") String userId, @PathVariable("accountId") String accountIBAN,
-                                                  @RequestBody Map<Object, Object> fields) {
+    @PreAuthorize("hasPermission(#userId, 'User', 'MANAGE_USER')")
+    public ResponseEntity<?> updateAccountPartiel(@PathVariable("userId") String userId, @PathVariable("accountId") String accountId, @RequestBody Map<Object, Object> fields) {
         Optional<User> user = userRepository.findById(userId);
-        Optional<Account> body = accountRepository.findByOwnerAndIBAN(user, accountIBAN);
-
+        Optional<Account> body = accountRepository.findByOwnerAndIBAN(user, accountId);
         if (body.isPresent()) {
             Account account = body.get();
-
             fields.forEach((f, v) -> {
                 Field field = ReflectionUtils.findField(Account.class, f.toString());
                 field.setAccessible(true);
-
                 if (field.getType() == Date.class) {
                     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.FRENCH);
                     try {
@@ -115,9 +107,8 @@ public class AccountController {
                     ReflectionUtils.setField(field, account, v);
                 }
             });
-
             validator.validate(new AccountInput(account.getSecret(),account.getCountry(), account.getSolde(),account.getOwner()));
-            account.setIBAN(accountIBAN);
+            account.setIBAN(accountId);
             accountRepository.save(account);
             return ResponseEntity.ok().build();
         }
