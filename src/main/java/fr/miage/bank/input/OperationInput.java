@@ -4,6 +4,7 @@ import fr.miage.bank.entity.Account;
 import fr.miage.bank.entity.Cart;
 import lombok.*;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @Data
@@ -20,7 +21,7 @@ public class OperationInput {
     private String text;
 
     @NotNull
-    private double amount;
+    private BigDecimal amount;
 
     @NotNull
     private double taux;

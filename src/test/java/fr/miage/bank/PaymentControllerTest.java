@@ -140,7 +140,7 @@ public class PaymentControllerTest {
         cartRepository.save(cart);
         Timestamp t1 = new Timestamp(45664565L);
         BigDecimal b = new BigDecimal(10);
-        PaymentInput payment = new PaymentInput(b,"USA","FR123456787",cart,t1);
+        PaymentInput payment = new PaymentInput(b,"Etats-Unis","FR123456787",cart,t1);
         ObjectMapper map = new ObjectMapper();
         Response response = given()
                 .body(map.writeValueAsString(payment))

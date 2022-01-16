@@ -81,19 +81,15 @@ public class PaymentController {
         Optional<Account> optionalAccount = accountRepository.findById(paiement.getIbanCreditor());
         Account compteCred = optionalAccount.get();
 
-        Date today = new Date();
         /*
+        Date today = new Date();
         if(today.after(cart.getDateExpiry()) || cart.isFreeze()){
             return ResponseEntity.badRequest().build();
         }*/
-        System.out.println(cart.isLocalisation());
         if(cart.isLocalisation()){
             String paysDeb = compteDeb.getCountry();
             String source = "";
             switch (paysDeb){
-                case "France","Belgique","Italie","Espagne":
-                    source="EUR";
-                    break;
                 case "Etats-Unis":
                     source="USD";
                     break;
@@ -104,11 +100,9 @@ public class PaymentController {
                     source="EUR";
                     break;
             }
+            String paysCred = compteCred.getCountry();
             String cible = "";
-            switch (paysDeb){
-                case "France","Belgique","Italie","Espagne":
-                    cible="EUR";
-                    break;
+            switch (paysCred){
                 case "Etats-Unis":
                     cible="USD";
                     break;
@@ -119,14 +113,14 @@ public class PaymentController {
                     cible="EUR";
                     break;
             }
-            String paysCred = compteCred.getCountry();
+            System.out.println(source);
+            System.out.println(cible);
             System.out.println(paysDeb);
             System.out.println(paysCred);
             if(!Objects.equals(paysDeb, paysCred)){
                 String url = "http://localhost:8000/taux-devise/source/{source}/cible/{cible}";
                 DeviseConversionBean response = template.getForObject(url, DeviseConversionBean.class, source, cible);
                 System.out.println(paiement.getAmount());
-                System.out.println(response);
                 DeviseConversionBean dvb = new DeviseConversionBean(response.getId(), source, cible, response.getTauxConversion(), paiement.getAmount(),
                         paiement.getAmount().multiply(response.getTauxConversion()), response.getPort());
 
@@ -146,15 +140,15 @@ public class PaymentController {
             );
 
 
-        Payment saved = paymentRepository.save(payment2Save);
-        compteDeb.debiterCompte(paiement.getAmount().doubleValue());
-        compteCred.crediterCompte(paiement.getAmount().doubleValue(), 1);
+            Payment saved = paymentRepository.save(payment2Save);
+            compteDeb.debiterCompte(paiement.getAmount().doubleValue());
+            compteCred.crediterCompte(paiement.getAmount().doubleValue(), 1);
 
             if(cart.isVirtual()){
                 cartRepository.delete(cart);
             }
             URI location = linkTo(methodOn(PaymentController.class).getOnePaiementById(userId, accountIban, carteId, saved.getId())).toUri();
-
+            System.out.println(location);
             return ResponseEntity.created(location).build();
         }else {
             return ResponseEntity.badRequest().build();

@@ -3,6 +3,7 @@ package fr.miage.bank.entity;
 import lombok.*;
 import javax.persistence.*;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Optional;
 
@@ -20,7 +21,7 @@ public class Operation implements Serializable {
 
     private Timestamp date;
     private String text;
-    private double amount;
+    private BigDecimal amount;
     private double taux;
 
     @ManyToOne
